@@ -150,4 +150,8 @@ dist/
 
 # Firebase ve Google Servis Anahtarları
 serviceAccountKey.json
+<<<<<<< HEAD
 *.pem
+=======
+*.pem
+>>>>>>> 73bef98 (Sensitive data removed)
