@@ -1,28 +1,23 @@
-import React from "react";
-import MapView from "./components/MapView";
-import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Guide from "./pages/Guide";
+import Neden from "./pages/Neden";
+import Contact from "./pages/Contact";
+import "./index.css";
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-[#fef9fb]">
-      <header className="py-10 text-center">
-        <h1 className="text-6xl font-extrabold italic bg-gradient-to-r from-fuchsia-600 via-pink-500 to-green-500 bg-clip-text text-transparent uppercase tracking-tight drop-shadow-md">
-          Queer Vegan Map Türkiye
-        </h1>
-        <p className="text-gray-600 mt-4 text-lg font-medium">
-          Topluluğun deneyimleriyle queer ve vegan dostu mekanları keşfet 💕
-        </p>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-6 pb-20">
-        <MapView />
+    <Router>
+      <Navbar />
+      <main className="main-container">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/guide" element={<Guide />} />
+          <Route path="/neden" element={<Neden />} />
+          <Route path="/contact" element={<Contact />} />
+        </Routes>
       </main>
-
-      <footer className="text-center py-6 text-sm text-gray-400">
-        © {new Date().getFullYear()} Q-V Map TR 🌈 | Made with ❤️ for community
-      </footer>
-    </div>
+    </Router>
   );
 }
-
-export default App;
