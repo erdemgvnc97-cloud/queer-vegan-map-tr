@@ -13,7 +13,7 @@ export default function App() {
       <main className="main-container">
         <Routes>
           {/* Sadece component isimlerini kullanıyoruz: */}
-          <Route path="/" element={<Home />} /> 
+          <Route path="/home" element={<Home />} /> 
           <Route path="/guide" element={<Guide />} />
           <Route path="/neden" element={<Neden />} />
           <Route path="/contact" element={<Contact />} />
