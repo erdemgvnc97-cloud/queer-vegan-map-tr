@@ -137,3 +137,17 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Bağımlılıklar
+node_modules/
+dist/
+.vercel/
+
+# Yerel Ortam Değişkenleri (EN ÖNEMLİSİ)
+.env
+.env.local
+.env.development.local
+
+# Firebase ve Google Servis Anahtarları
+serviceAccountKey.json
+*.pem
