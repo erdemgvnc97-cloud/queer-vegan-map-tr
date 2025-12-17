@@ -2,17 +2,32 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
-import fs from "fs";
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const serviceAccount = JSON.parse(fs.readFileSync("./serviceAccountKey.json"));
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+// Firebase Yapılandırması: Render üzerindeki Environment Variables'dan okur.
+// JSON dosyasına ihtiyaç duymaz, böylece "file not found" hatası almazsınız.
+const adminConfig = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+  // Private key içindeki \n karakterlerini gerçek satır sonlarına dönüştürür.
+  privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+};
+
+if (!adminConfig.projectId || !adminConfig.privateKey) {
+  console.error("❌ Hata: Firebase çevre değişkenleri eksik! Render ayarlarını kontrol edin.");
+}
+
+admin.initializeApp({
+  credential: admin.credential.cert(adminConfig),
+});
+
 const db = admin.firestore();
 
+// API Rotaları
 app.get("/api/places", async (req, res) => {
   try {
     const snapshot = await db.collection("places").get();
@@ -37,4 +52,4 @@ app.post("/api/reviews/:id", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(\`✅ Backend running on port \${PORT}\`));
+app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
