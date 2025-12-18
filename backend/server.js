@@ -1,7 +1,9 @@
-const express = require("express");
-const admin = require("firebase-admin");
-const cors = require("cors");
-require("dotenv").config();
+import express from "express";
+import admin from "firebase-admin";
+import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
@@ -26,7 +28,7 @@ app.get("/api/places", async (req, res) => {
   }
 });
 
-// 2. Yeni Deneyim Kaydetme (Tam İstediğin Form Alanları)
+// 2. Yeni Deneyim Kaydetme (İstediğin Form Alanları)
 app.post("/api/reviews/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -71,5 +73,5 @@ app.post("/api/reviews/:id", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server ${PORT} üzerinde devrim yapıyor...`));
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));

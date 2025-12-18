@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import axios from "axios";
-import { MapPin, Send, ShieldCheck, Briefcase, Leaf, Banknote, Star, Info } from "lucide-react";
+import { MapPin, Info } from "lucide-react";
 
 const LIBRARIES = ["places"];
 const mapContainerStyle = { height: "45vh", width: "100%" };
@@ -63,7 +63,7 @@ const MapView = () => {
     }
   };
 
-  if (!isLoaded) return <div className="p-20 text-center font-bold">Yükleniyor...</div>;
+  if (!isLoaded) return <div className="p-20 text-center font-bold">Harita Hazırlanıyor...</div>;
 
   return (
     <div className="max-w-3xl mx-auto px-2 pb-20">
@@ -74,58 +74,53 @@ const MapView = () => {
       </div>
 
       {selected ? (
-        <div className="bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-6 shadow-2xl border border-pink-100 animate-in text-left">
+        <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-6 shadow-2xl border border-pink-100 text-left">
           <div className="flex items-center gap-4 mb-6">
             <div className="p-3 bg-pink-500 rounded-xl text-white"><MapPin size={24} /></div>
             <h3 className="text-xl font-black text-gray-800">{selected.name}</h3>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Soru 1: Queer Tutum */}
             <div className="bg-purple-50 p-4 rounded-2xl">
               <label className="block font-bold text-purple-800 text-sm mb-2">Queer bireylere karşı tutum nasıl? (1-5 arası)</label>
               <div className="flex items-center gap-4">
                 <input type="range" min="1" max="5" value={review.queerScore} onChange={(e) => setReview({...review, queerScore: e.target.value})} className="w-full accent-purple-600" />
-                <span className="font-black text-purple-700">{review.queerScore}</span>
+                <span className="font-black text-purple-700 w-4">{review.queerScore}</span>
               </div>
             </div>
 
-            {/* Soru 2: İstihdam */}
             <div className="bg-purple-50 p-4 rounded-2xl">
               <label className="block font-bold text-purple-800 text-sm mb-2">Mekan queer bireylere istihdam sağlıyor mu?</label>
               <div className="flex gap-2">
                 {["Evet", "Hayır"].map((opt) => (
-                  <button key={opt} type="button" onClick={() => setReview({...review, queerEmployment: opt})} className={`flex-1 py-3 rounded-xl font-bold ${review.queerEmployment === opt ? 'bg-purple-600 text-white' : 'bg-white text-purple-600'}`}>{opt}</button>
+                  <button key={opt} type="button" onClick={() => setReview({...review, queerEmployment: opt})} className={`flex-1 py-3 rounded-xl font-bold transition-all ${review.queerEmployment === opt ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-purple-600'}`}>{opt}</button>
                 ))}
               </div>
             </div>
 
-            {/* Soru 3: Vegan Seçenekler */}
             <div className="bg-green-50 p-4 rounded-2xl">
               <label className="block font-bold text-green-800 text-sm mb-2">Vegan seçenekler yeterli mi? (1-5 arası)</label>
               <div className="flex items-center gap-4">
                 <input type="range" min="1" max="5" value={review.veganScore} onChange={(e) => setReview({...review, veganScore: e.target.value})} className="w-full accent-green-600" />
-                <span className="font-black text-green-700">{review.veganScore}</span>
+                <span className="font-black text-green-700 w-4">{review.veganScore}</span>
               </div>
             </div>
 
-            {/* Soru 4: Vegan Fiyat */}
             <div className="bg-green-50 p-4 rounded-2xl">
               <label className="block font-bold text-green-800 text-sm mb-2">Vegan seçeneklerin fiyat ortalaması nasıl?</label>
               <div className="flex gap-2">
                 {["Uygun", "Orta", "Yüksek"].map((p) => (
-                  <button key={p} type="button" onClick={() => setReview({...review, veganPrice: p})} className={`flex-1 py-2 rounded-lg text-xs font-bold ${review.veganPrice === p ? 'bg-green-600 text-white' : 'bg-white text-green-700'}`}>{p}</button>
+                  <button key={p} type="button" onClick={() => setReview({...review, veganPrice: p})} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${review.veganPrice === p ? 'bg-green-600 text-white shadow-md' : 'bg-white text-green-700'}`}>{p}</button>
                 ))}
               </div>
             </div>
 
-            {/* Soru 5: Deneyimler */}
             <div className="space-y-4">
               <label className="block font-bold text-gray-700 text-sm">Deneyimlerin nasıldı?</label>
-              <textarea className="w-full p-4 rounded-2xl border-2 border-gray-100 outline-none focus:border-pink-300 min-h-[100px]" value={review.comment} onChange={(e) => setReview({...review, comment: e.target.value})} />
+              <textarea placeholder="Neler yaşadın?..." className="w-full p-4 rounded-2xl border-2 border-gray-100 outline-none focus:border-pink-300 min-h-[100px]" value={review.comment} onChange={(e) => setReview({...review, comment: e.target.value})} />
               
               <label className="block font-bold text-gray-700 text-sm">Kullanıcı Nickname:</label>
-              <input type="text" className="w-full p-4 rounded-xl border-2 border-gray-100 outline-none focus:border-pink-300" value={review.nickname} onChange={(e) => setReview({...review, nickname: e.target.value})} />
+              <input type="text" placeholder="Adınız veya kullanıcı adınız" className="w-full p-4 rounded-xl border-2 border-gray-100 outline-none focus:border-pink-300" value={review.nickname} onChange={(e) => setReview({...review, nickname: e.target.value})} />
             </div>
 
             <button type="submit" className="w-full py-5 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white font-black text-lg rounded-2xl shadow-xl active:scale-95 transition-all">DENEYİMİ KAYDET 🚀</button>
@@ -134,7 +129,7 @@ const MapView = () => {
       ) : (
         <div className="p-12 bg-white/50 border-4 border-dashed border-pink-200 rounded-[2.5rem] text-center">
           <Info className="mx-auto text-pink-300 mb-2" size={40} />
-          <p className="text-gray-500 font-bold">Haritadan bir mekana tıkla!</p>
+          <p className="text-gray-500 font-bold uppercase italic">Bir mekana tıkla ve formu aç!</p>
         </div>
       )}
     </div>
