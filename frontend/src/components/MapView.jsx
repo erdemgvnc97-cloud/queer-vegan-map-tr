@@ -51,9 +51,9 @@ export default function MapView() {
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <GoogleMap
-        mapContainerStyle={containerStyle}
+        mapContainerStyle={{ width: "100%", height: "100%" }}
         center={center}
-        zoom={6}
+        zoom={12}
         options={{
           fullscreenControl: false,
           streetViewControl: false,
