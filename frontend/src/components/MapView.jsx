@@ -71,12 +71,16 @@ const MapView = () => {
           options={{
             disableDefaultUI: true,
             zoomControl: true,
+            clickableIcons: false, // Google'ın kendi yerlerinin tıklanmasını kapatır
           }}
         >
           {places.map((place) => (
             <Marker
               key={place.id}
-              position={{ lat: place.lat, lng: place.lng }}
+              position={{ 
+                lat: Number(place.lat), 
+                lng: Number(place.lng) 
+              }}
               onClick={() => setSelected(place)}
             />
           ))}
@@ -91,7 +95,7 @@ const MapView = () => {
             </div>
             <div>
               <h3 className="text-4xl font-black text-gray-800">
-                {selected.name}
+                {selected.name} {/* Artık tıkladığın mekanın adı yazar */}
               </h3>
               <p className="text-purple-500 font-medium tracking-wide uppercase text-sm mt-1">
                 Toplulukla Deneyimini Paylaş 🌈
@@ -119,14 +123,14 @@ const MapView = () => {
                   />
                 </label>
                 <label className="block">
-                  <span className="font-bold text-gray-700 text-sm block mb-2">Ayrımcılık/Saygısızlık Gözlemi?</span>
+                  <span className="font-bold text-gray-700 text-sm block mb-2">Ayrımcılık Yaşandı mı?</span>
                   <select
                     className="w-full p-4 bg-white border-2 border-purple-100 rounded-2xl focus:border-purple-400 outline-none"
                     value={review.queerRespect}
                     onChange={(e) => setReview({ ...review, queerRespect: e.target.value })}
                   >
-                    <option>Hayır, yaşanmadı ✨</option>
-                    <option>Evet, yaşandı ⚠️</option>
+                    <option>Hayır ✨</option>
+                    <option>Evet ⚠️</option>
                   </select>
                 </label>
               </div>
@@ -151,7 +155,7 @@ const MapView = () => {
                   />
                 </label>
                 <label className="block">
-                  <span className="font-bold text-gray-700 text-sm block mb-2">Fiyat Performans</span>
+                  <span className="font-bold text-gray-700 text-sm block mb-2">Fiyat Seviyesi</span>
                   <select
                     className="w-full p-4 bg-white border-2 border-green-100 rounded-2xl focus:border-green-400 outline-none"
                     value={review.veganPrice}
@@ -166,24 +170,23 @@ const MapView = () => {
             </div>
 
             <div className="md:col-span-2 space-y-6 mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <input
-                  type="text"
-                  placeholder="Rumuzun (Örn: mor_marul)"
-                  className="p-5 border-2 border-gray-100 rounded-2xl outline-none focus:border-purple-300"
-                  value={review.nickname}
-                  onChange={(e) => setReview({ ...review, nickname: e.target.value })}
-                />
-                <textarea
-                  placeholder="Mekan hakkında neler söylemek istersin?"
-                  className="md:col-span-2 p-5 border-2 border-gray-100 rounded-2xl outline-none focus:border-purple-300"
-                  value={review.comment}
-                  onChange={(e) => setReview({ ...review, comment: e.target.value })}
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Rumuzun (Örn: mor_marul)"
+                className="w-full p-5 border-2 border-gray-100 rounded-2xl outline-none focus:border-purple-300"
+                value={review.nickname}
+                onChange={(e) => setReview({ ...review, nickname: e.target.value })}
+              />
+              <textarea
+                placeholder="Mekan hakkındaki yorumun..."
+                rows="3"
+                className="w-full p-5 border-2 border-gray-100 rounded-2xl outline-none focus:border-purple-300"
+                value={review.comment}
+                onChange={(e) => setReview({ ...review, comment: e.target.value })}
+              />
               <button
                 type="submit"
-                className="w-full py-6 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white font-black text-lg rounded-3xl flex items-center justify-center gap-3 hover:opacity-90 transition-all shadow-xl"
+                className="w-full py-6 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white font-black text-lg rounded-3xl flex items-center justify-center gap-3 hover:opacity-90 shadow-xl"
               >
                 <Send size={24} /> DENEYİMİMİ KAYDET
               </button>
@@ -192,7 +195,9 @@ const MapView = () => {
         </div>
       ) : (
         <div className="text-center p-20 bg-white/40 backdrop-blur-sm rounded-[3rem] border-4 border-dashed border-pink-100">
-          <p className="text-gray-500 font-bold text-xl">📍 Keşfetmek için bir mekana tıkla!</p>
+          <p className="text-gray-500 font-bold text-xl uppercase tracking-widest">
+            📍 Mekanlara tıkla ve deneyimini paylaş!
+          </p>
         </div>
       )}
     </div>
