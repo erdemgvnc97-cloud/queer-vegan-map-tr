@@ -6,8 +6,8 @@ const containerStyle = {
 };
 
 const center = {
-  lat: 39.0,
-  lng: 35.0,
+  lat: 39,
+  lng: 35,
 };
 
 export default function MapView({ places = [], onPlaceClick }) {
@@ -15,7 +15,7 @@ export default function MapView({ places = [], onPlaceClick }) {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
   });
 
-  if (!isLoaded) return <div>Harita yükleniyor…</div>;
+  if (!isLoaded) return null;
 
   return (
     <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={6}>
