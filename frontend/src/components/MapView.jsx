@@ -1,4 +1,7 @@
-// frontend/src/components/MapView.jsx
+useEffect(() => {
+  console.log("Google Maps Loaded:", isLoaded);
+}, [isLoaded]);
+
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
 import axios from "axios";
