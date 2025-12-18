@@ -9,7 +9,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Firebase başlatma
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -21,26 +20,21 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 📍 Kayıtlı mekanları getir (Hata veren rota buydu)
+// 📍 Tüm mekanları çek (404 hatasını çözen ana rota)
 app.get("/api/places", async (req, res) => {
   try {
     const snapshot = await db.collection("places").get();
-    const places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(places);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 📍 Mekanın yorumlarını getir
+// 📍 Belirli mekanın yorumlarını getir
 app.get("/api/places/:id/reviews", async (req, res) => {
   try {
-    const snapshot = await db.collection("places").doc(req.params.id).collection("reviews")
-      .orderBy("timestamp", "desc").get();
+    const snapshot = await db.collection("places").doc(req.params.id)
+      .collection("reviews").orderBy("timestamp", "desc").get();
     res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // 📍 Yeni yorum kaydet
@@ -65,10 +59,8 @@ app.post("/api/reviews/:id", async (req, res) => {
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`✅ Server running on ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Backend aktif: ${PORT}`));
