@@ -1,46 +1,45 @@
-import express from "express";
-import admin from "firebase-admin";
-import cors from "cors";
-import dotenv from "dotenv";
-
-dotenv.config();
+const express = require("express");
+const admin = require("firebase-admin");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Firebase Kurulumu
+// Firebase Yetkilendirme
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
-    }),
+    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
   });
 }
-
 const db = admin.firestore();
 
-// Kayıtlı mekanları getir
+// 1. Mekanları ve Yorumları Çekme
 app.get("/api/places", async (req, res) => {
   try {
     const snapshot = await db.collection("places").get();
     const places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(places);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).send(err.message);
   }
 });
 
-// Mekan/Yorum kaydet
+// 2. Yeni Deneyim Kaydetme (Tam İstediğin Form Alanları)
 app.post("/api/reviews/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { 
-      nickname, queerScore, queerRespect, 
-      veganScore, veganPrice, comment, 
-      placeName, lat, lng 
+      nickname, 
+      queerScore, 
+      queerEmployment, 
+      veganScore, 
+      veganPrice, 
+      comment, 
+      placeName, 
+      lat, 
+      lng 
     } = req.body;
 
     const placeRef = db.collection("places").doc(id);
@@ -56,9 +55,9 @@ app.post("/api/reviews/:id", async (req, res) => {
     }
 
     await placeRef.collection("reviews").add({
-      nickname: nickname || "Anonim Kedi",
+      nickname: nickname || "Anonim",
       queerScore: parseInt(queerScore),
-      queerRespect,
+      queerEmployment,
       veganScore: parseInt(veganScore),
       veganPrice,
       comment,
@@ -67,9 +66,10 @@ app.post("/api/reviews/:id", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: "Sunucu hatası." });
+    console.error("Kayıt Hatası:", err);
+    res.status(500).json({ error: "Kaydedilemedi" });
   }
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server ${PORT} üzerinde devrim yapıyor...`));
