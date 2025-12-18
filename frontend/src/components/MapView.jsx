@@ -25,10 +25,9 @@ const MapView = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places"], // KRİTİK: Google Places kütüphanesini yükler
+    libraries: ["places"],
   });
 
-  // Veritabanındaki önceden yorumlanmış mekanları çek
   useEffect(() => {
     if (isLoaded) {
       axios.get(`${API_URL}/api/places`)
@@ -37,10 +36,12 @@ const MapView = () => {
     }
   }, [isLoaded, API_URL]);
 
-  // Haritadaki herhangi bir mekana (POI) tıklandığında çalışan fonksiyon
+  // HARİTADAKİ MEKANLARI YAKALAYAN FONKSİYON
   const handleMapClick = (e) => {
+    // Eğer kullanıcı Google'ın bir POI (mekan) simgesine tıkladıysa placeId olur
     if (e.placeId) {
-      e.stop(); // Google'ın varsayılan penceresini kapat
+      e.stop(); // Google'ın kendi bilgi penceresini açmasını durdur
+      
       const service = new window.google.maps.places.PlacesService(document.createElement('div'));
       service.getDetails({ placeId: e.placeId }, (place, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
@@ -68,7 +69,6 @@ const MapView = () => {
       setSelected(null);
       setReview({ nickname: "", queerScore: 5, queerRespect: "Hayır ✨", veganScore: 5, veganPrice: "Normal ⚖️", comment: "" });
       
-      // Listeyi güncellemek için tekrar veri çek
       const res = await axios.get(`${API_URL}/api/places`);
       setPlaces(res.data);
     } catch (err) {
@@ -85,19 +85,20 @@ const MapView = () => {
           mapContainerStyle={mapContainerStyle}
           center={center}
           zoom={13}
-          onClick={handleMapClick}
+          onClick={handleMapClick} // <--- Tıklama burayı tetikliyor
           options={{
             disableDefaultUI: true,
             zoomControl: true,
-            styles: [/* Buraya istersen harita stilini (dark/light/pastel) ekleyebiliriz */]
+            // Bu ayar POI tıklamalarını garantiye alır
+            clickableIcons: true 
           }}
         >
           {places.map((place) => (
             <Marker
               key={place.id}
+              // Sayısal format hatasını önlemek için Number() kullanıyoruz
               position={{ lat: Number(place.lat), lng: Number(place.lng) }}
               onClick={() => setSelected(place)}
-              icon="https://maps.google.com/mapfiles/ms/icons/pink-dot.png"
             />
           ))}
         </GoogleMap>
@@ -116,23 +117,21 @@ const MapView = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Queer Dostluk Bölümü */}
             <div className="space-y-6 p-6 bg-purple-50 rounded-3xl">
               <h4 className="flex items-center gap-2 font-bold text-purple-800"><ShieldCheck size={20}/> Queer Güvenliği</h4>
               <label className="block">
                 <span className="text-sm text-gray-600 block mb-2">Saygısızlık/Ayrımcılık yaşandı mı?</span>
                 <select 
-                  className="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-purple-400"
+                  className="w-full p-4 rounded-xl border-none shadow-sm"
                   value={review.queerRespect}
                   onChange={(e) => setReview({...review, queerRespect: e.target.value})}
                 >
                   <option>Hayır ✨</option>
-                  <option>Evet ⚠️ (Lütfen yorumda detay verin)</option>
+                  <option>Evet ⚠️</option>
                 </select>
               </label>
             </div>
 
-            {/* Vegan Bölümü */}
             <div className="space-y-6 p-6 bg-green-50 rounded-3xl">
               <h4 className="flex items-center gap-2 font-bold text-green-800"><Leaf size={20}/> Vegan Seçenek</h4>
               <label className="block">
@@ -151,19 +150,19 @@ const MapView = () => {
 
             <div className="md:col-span-2 space-y-4">
               <input 
-                type="text" placeholder="Rumuzun (Örn: queer_gezgin)"
-                className="w-full p-5 rounded-2xl border-2 border-gray-100 focus:border-fuchsia-300 outline-none"
+                type="text" placeholder="Rumuzun"
+                className="w-full p-5 rounded-2xl border-2 border-gray-100"
                 value={review.nickname}
                 onChange={(e) => setReview({...review, nickname: e.target.value})}
               />
               <textarea 
-                placeholder="Mekan hakkında neler söylemek istersin? Çalışanların tavrı, ortamın enerjisi..."
-                className="w-full p-5 rounded-2xl border-2 border-gray-100 focus:border-fuchsia-300 outline-none"
+                placeholder="Mekan hakkında neler söylemek istersin?"
+                className="w-full p-5 rounded-2xl border-2 border-gray-100"
                 rows="4"
                 value={review.comment}
                 onChange={(e) => setReview({...review, comment: e.target.value})}
               />
-              <button type="submit" className="w-full py-6 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white font-black text-xl rounded-2xl shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all">
+              <button type="submit" className="w-full py-6 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white font-black text-xl rounded-2xl shadow-xl">
                 DENEYİMİ SİTEYE EKLE 🚀
               </button>
             </div>
@@ -172,8 +171,7 @@ const MapView = () => {
       ) : (
         <div className="text-center p-16 bg-white/50 backdrop-blur-md rounded-[4rem] border-4 border-dashed border-pink-200">
           <Info className="mx-auto text-pink-300 mb-4" size={48} />
-          <p className="text-gray-500 font-black text-2xl">HARİTADAKİ HERHANGİ BİR MEKANA TIKLA!</p>
-          <p className="text-gray-400 mt-2 font-medium italic text-lg">"Koru Starbucks, yerel bir bar veya bir kitabevi..."</p>
+          <p className="text-gray-500 font-black text-2xl uppercase">Haritadaki herhangi bir mekana (Starbucks vb.) tıkla!</p>
         </div>
       )}
     </div>
