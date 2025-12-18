@@ -8,67 +8,73 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Firebase Yetkilendirme
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
     }),
   });
 }
+
 const db = admin.firestore();
 
-// 📍 Haritanın gelmesi için gereken ana rota (404 hatasını çözer)
-app.get("/api/places", async (req, res) => {
-  try {
-    const snapshot = await db.collection("places").get();
-    const places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(places);
-  } catch (err) { 
-    res.status(500).json({ error: err.message }); 
-  }
+/* 📍 Mekanlar */
+app.get("/api/places", async (_, res) => {
+  const snap = await db.collection("places").get();
+  res.json(snap.docs.map(d => ({ id: d.id, ...d.data() })));
 });
 
-// 📍 Seçilen mekanın yorumlarını getir
+/* 📍 Yorumlar */
 app.get("/api/places/:id/reviews", async (req, res) => {
-  try {
-    const snapshot = await db.collection("places").doc(req.params.id)
-      .collection("reviews").orderBy("timestamp", "desc").get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  const snap = await db
+    .collection("places")
+    .doc(req.params.id)
+    .collection("reviews")
+    .orderBy("timestamp", "desc")
+    .get();
+
+  res.json(snap.docs.map(d => ({ id: d.id, ...d.data() })));
 });
 
-// 📍 Yeni deneyim kaydet
+/* ✍️ Yeni Yorum */
 app.post("/api/reviews/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const data = req.body;
-    const placeRef = db.collection("places").doc(id);
-    const doc = await placeRef.get();
+  const { id } = req.params;
+  const data = req.body;
 
-    if (!doc.exists) {
-      await placeRef.set({
-        name: data.placeName, 
-        lat: parseFloat(data.lat), 
-        lng: parseFloat(data.lng),
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-    }
+  const placeRef = db.collection("places").doc(id);
+  const placeDoc = await placeRef.get();
 
-    await placeRef.collection("reviews").add({
-      nickname: data.nickname,
-      queerScore: parseInt(data.queerScore),
-      queerEmployment: data.queerEmployment,
-      veganScore: parseInt(data.veganScore),
-      veganPrice: data.veganPrice,
-      comment: data.comment,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
+  if (!placeDoc.exists) {
+    await placeRef.set({
+      name: data.placeName,
+      lat: parseFloat(data.lat),
+      lng: parseFloat(data.lng),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  }
+
+  // 🛡️ Basit spam önlemi
+  if (!data.comment || data.comment.length < 10) {
+    return res.status(400).json({ error: "Yorum çok kısa" });
+  }
+
+  await placeRef.collection("reviews").add({
+    nickname: data.nickname || "Anonim",
+    queerScore: Number(data.queerScore),
+    queerEmployment: data.queerEmployment,
+    employmentExperience: data.employmentExperience || null,
+    animalScore: Number(data.animalScore),
+    veganScore: Number(data.veganScore),
+    veganPrice: data.veganPrice,
+    flagged: data.flagged || false,
+    comment: data.comment,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  res.json({ success: true });
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 Server ready on ${PORT}`));
+app.listen(PORT, () => console.log("🚀 Backend ready"));

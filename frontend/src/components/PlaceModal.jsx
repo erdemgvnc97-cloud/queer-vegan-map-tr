@@ -32,4 +32,4 @@ export default function PlaceModal({ place, onClose }) {
     onClose();
   };
 
-  r
+}
