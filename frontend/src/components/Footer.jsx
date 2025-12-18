@@ -1,20 +1,18 @@
 export default function Footer() {
   return (
-    <footer
-      style={{
-        fontSize: "0.75rem",
-        padding: "20px",
-        color: "#666",
-        textAlign: "center",
-      }}
-    >
+    <footer style={{
+      padding: "24px",
+      fontSize: "0.75rem",
+      color: "#777",
+      textAlign: "center",
+      background: "#f5f5f7"
+    }}>
       <p>
-        © {new Date().getFullYear()} Queer Vegan Map Türkiye · Kullanıcı deneyimlerine
-        dayalı bir bilgilendirme platformudur.
+        Bu platform kullanıcı deneyimlerine dayanır. İçeriklerden doğabilecek
+        hukuki sorumluluk kullanıcıya aittir.
       </p>
-
-      <p style={{ marginTop: 8 }}>
-        İçerikler kullanıcı beyanıdır. Hukuki sorumluluk kabul edilmez.
+      <p>
+        © 2025 Queer & Vegan Map – Tüm hakları saklıdır.
       </p>
     </footer>
   );
