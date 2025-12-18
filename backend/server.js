@@ -9,13 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Firebase Admin Kurulumu [cite: 8, 9]
+// Firebase Kurulumu
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      // Private key içindeki \n karakterlerini gerçek satır sonlarına dönüştürür [cite: 9]
       privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
     }),
   });
@@ -23,22 +22,21 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// 📍 Tüm kayıtlı mekanları getir [cite: 10]
+// Kayıtlı mekanları getir
 app.get("/api/places", async (req, res) => {
   try {
     const snapshot = await db.collection("places").get();
     const places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(places);
   } catch (err) {
-    console.error("🔥 Hata:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ✍️ Mekan yoksa oluştur ve yorum ekle [cite: 11]
+// Mekan/Yorum kaydet
 app.post("/api/reviews/:id", async (req, res) => {
   try {
-    const { id } = req.params; // Google Place ID
+    const { id } = req.params;
     const { 
       nickname, queerScore, queerRespect, 
       veganScore, veganPrice, comment, 
@@ -48,7 +46,6 @@ app.post("/api/reviews/:id", async (req, res) => {
     const placeRef = db.collection("places").doc(id);
     const doc = await placeRef.get();
 
-    // Mekan veritabanında yoksa önce mekanı oluştur
     if (!doc.exists) {
       await placeRef.set({
         name: placeName,
@@ -58,7 +55,6 @@ app.post("/api/reviews/:id", async (req, res) => {
       });
     }
 
-    // Yorumu (review) alt koleksiyon olarak ekle
     await placeRef.collection("reviews").add({
       nickname: nickname || "Anonim Kedi",
       queerScore: parseInt(queerScore),
@@ -69,12 +65,11 @@ app.post("/api/reviews/:id", async (req, res) => {
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    res.json({ success: true, message: "Deneyim başarıyla kaydedildi! 🌈" });
+    res.json({ success: true });
   } catch (err) {
-    console.error("❌ Hata:", err);
-    res.status(500).json({ error: "Sunucu hatası oluştu." });
+    res.status(500).json({ error: "Sunucu hatası." });
   }
 });
 
-const PORT = process.env.PORT || 8080; [cite: 12]
-app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`)); [cite: 12]
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
