@@ -20,15 +20,16 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 📍 Tüm mekanları çek (404 hatasını çözen ana rota)
+// 📍 Haritadaki noktaları getiren ana rota
 app.get("/api/places", async (req, res) => {
   try {
     const snapshot = await db.collection("places").get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(places);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 📍 Belirli mekanın yorumlarını getir
+// 📍 Yorumları getiren rota
 app.get("/api/places/:id/reviews", async (req, res) => {
   try {
     const snapshot = await db.collection("places").doc(req.params.id)
@@ -37,30 +38,24 @@ app.get("/api/places/:id/reviews", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 📍 Yeni yorum kaydet
+// 📍 Yorum kaydeden rota
 app.post("/api/reviews/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
     const placeRef = db.collection("places").doc(id);
     const doc = await placeRef.get();
-
     if (!doc.exists) {
-      await placeRef.set({
-        name: data.placeName, lat: parseFloat(data.lat), lng: parseFloat(data.lng),
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+      await placeRef.set({ name: data.placeName, lat: parseFloat(data.lat), lng: parseFloat(data.lng), createdAt: admin.firestore.FieldValue.serverTimestamp() });
     }
-
     await placeRef.collection("reviews").add({
       nickname: data.nickname, queerScore: parseInt(data.queerScore),
       queerEmployment: data.queerEmployment, veganScore: parseInt(data.veganScore),
-      veganPrice: data.veganPrice, comment: data.comment,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
+      veganPrice: data.veganPrice, comment: data.comment, timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`✅ Backend aktif: ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));
