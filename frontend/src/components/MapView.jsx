@@ -61,20 +61,21 @@ export default function MapView() {
         }}
       >
         {/* 🔴 Markerlar */}
-        {places.map((place) => {
-          if (!place?.location?.lat || !place?.location?.lng) return null;
+{places.map((place) => {
+  if (place.lat == null || place.lng == null) return null;
 
-          return (
-            <Marker
-              key={place._id}
-              position={{
-                lat: place.location.lat,
-                lng: place.location.lng,
-              }}
-              onClick={() => setSelectedPlace(place)}
-            />
-          );
-        })}
+  return (
+    <Marker
+      key={place.id}
+      position={{
+        lat: place.lat,
+        lng: place.lng,
+      }}
+      onClick={() => setSelectedPlace(place)}
+    />
+  );
+})}
+
       </GoogleMap>
 
       {/* 🧾 Modal */}

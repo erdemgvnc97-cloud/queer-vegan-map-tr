@@ -10,7 +10,7 @@ export default function Navbar() {
          <Link to="/">Harita</Link>
          <Link to="/guide">Vegan Rehberi</Link>
          <Link to="/neden">Neden?</Link>
-         <Link to="/contact">İletişim</Link>
+         <Link to="/iletisim">İletişim</Link>
        </div>
     </nav>
   );
