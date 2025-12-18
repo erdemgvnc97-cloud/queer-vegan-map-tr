@@ -1,82 +1,65 @@
 import { useEffect, useMemo, useState } from "react";
 import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
 import axios from "axios";
+import PlaceModal from "./PlaceModal";
 
 export default function MapView() {
-  const libraries = useMemo(() => ["places"], []);
-  const center = useMemo(() => ({ lat: 39.92, lng: 32.85 }), []);
-
   const API_URL = import.meta.env.VITE_API_URL;
   const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-  const { isLoaded, loadError } = useJsApiLoader({
+  const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_KEY,
-    libraries,
+    libraries: ["places"],
   });
 
+  const center = { lat: 39.92, lng: 32.85 };
+
   const [places, setPlaces] = useState([]);
-  const [map, setMap] = useState(null);
+  const [selectedPlace, setSelectedPlace] = useState(null);
 
-  // 🔍 Debug – çok önemli
   useEffect(() => {
-    console.log("MAP STATUS →", {
-      isLoaded,
-      loadError,
-      GOOGLE_KEY_EXISTS: !!GOOGLE_KEY,
-      API_URL,
-    });
-  }, [isLoaded, loadError, GOOGLE_KEY, API_URL]);
+    if (!isLoaded) return;
+    axios.get(`${API_URL}/api/places`).then(res => setPlaces(res.data));
+  }, [isLoaded]);
 
-  // 📍 Backend’den mekanları çek
-  useEffect(() => {
-    if (!isLoaded || !API_URL) return;
+  const getColor = (score) =>
+    score >= 8 ? "green" : score >= 5 ? "orange" : "red";
 
-    axios
-      .get(`${API_URL}/api/places`)
-      .then((res) => setPlaces(res.data))
-      .catch((err) => console.error("PLACES ERROR:", err));
-  }, [isLoaded, API_URL]);
+  if (!isLoaded) return <div>Harita yükleniyor…</div>;
 
-  // ❌ Harita yüklenemediyse
-  if (loadError) {
-    return (
-      <div style={{ padding: 40, fontWeight: "bold", color: "red" }}>
-        Google Maps yüklenemedi ❌ <br />
-        API KEY veya domain restriction kontrol et
-      </div>
-    );
-  }
-
-  // ⏳ Yükleniyor
-  if (!isLoaded) {
-    return (
-      <div style={{ padding: 40, fontWeight: "bold", color: "#999" }}>
-        Harita yükleniyor…
-      </div>
-    );
-  }
-
-  // ✅ HARİTA
   return (
-    <GoogleMap
-      mapContainerStyle={{ width: "100%", height: "100%" }}
-      center={center}
-      zoom={13}
-      onLoad={(m) => setMap(m)}
-      options={{
-        disableDefaultUI: true,
-        zoomControl: true,
-      }}
-    >
-      {places.map((p) => (
-        <MarkerF
-          key={p.id}
-          position={{
-            lat: Number(p.lat),
-            lng: Number(p.lng),
-          }}
+    <>
+      <GoogleMap
+        center={center}
+        zoom={13}
+        mapContainerStyle={{ width: "100%", height: "100%" }}
+      >
+        <div className="map-legend">
+          <span>🟢 Güvenli deneyimler</span>
+          <span>🟠 Karışık deneyimler</span>
+         <span>🔴 Sorun bildirilen mekânlar</span>
+        </div>
+
+        {places.map(p => (
+          <MarkerF
+            key={p.id}
+            position={{ lat: p.lat, lng: p.lng }}
+            icon={{
+              url: `http://maps.google.com/mapfiles/ms/icons/${getColor(
+                p.avgScore || 5
+              )}-dot.png`,
+            }}
+            onClick={() => setSelectedPlace(p)}
+          />
+        ))}
+      </GoogleMap>
+
+      {selectedPlace && (
+        <PlaceModal
+          place={selectedPlace}
+          onClose={() => setSelectedPlace(null)}
         />
-      ))}
-    </GoogleMap>
+      )}
+    </>
   );
 }

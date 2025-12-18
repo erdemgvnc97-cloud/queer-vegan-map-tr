@@ -39,3 +39,24 @@ button:active {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+.map-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.95);
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.75rem;
+  display: flex;
+  gap: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+html, body, #root {
+  height: 100%;
+}
+
+.main-content {
+  min-height: calc(100vh - 160px); 
+}
