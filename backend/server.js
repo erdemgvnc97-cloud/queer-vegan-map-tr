@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Firebase Başlatma
+// Firebase Yetkilendirme
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -20,16 +20,18 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 📍 Haritadaki noktaları getiren ana rota (404 hatasını çözer)
+// 📍 Haritanın gelmesi için gereken ana rota (404 hatasını çözer)
 app.get("/api/places", async (req, res) => {
   try {
     const snapshot = await db.collection("places").get();
     const places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(places);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { 
+    res.status(500).json({ error: err.message }); 
+  }
 });
 
-// 📍 Seçilen mekanın yorumlarını getiren rota
+// 📍 Seçilen mekanın yorumlarını getir
 app.get("/api/places/:id/reviews", async (req, res) => {
   try {
     const snapshot = await db.collection("places").doc(req.params.id)
@@ -38,7 +40,7 @@ app.get("/api/places/:id/reviews", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 📍 Yeni deneyim kaydetme rotası
+// 📍 Yeni deneyim kaydet
 app.post("/api/reviews/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -48,7 +50,9 @@ app.post("/api/reviews/:id", async (req, res) => {
 
     if (!doc.exists) {
       await placeRef.set({
-        name: data.placeName, lat: parseFloat(data.lat), lng: parseFloat(data.lng),
+        name: data.placeName, 
+        lat: parseFloat(data.lat), 
+        lng: parseFloat(data.lng),
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
     }
@@ -56,9 +60,9 @@ app.post("/api/reviews/:id", async (req, res) => {
     await placeRef.collection("reviews").add({
       nickname: data.nickname,
       queerScore: parseInt(data.queerScore),
-      queerEmployment: data.queerEmployment, // Evet-Hayır alanı
+      queerEmployment: data.queerEmployment,
       veganScore: parseInt(data.veganScore),
-      veganPrice: data.veganPrice, // Uygun-Orta-Yüksek alanı
+      veganPrice: data.veganPrice,
       comment: data.comment,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
