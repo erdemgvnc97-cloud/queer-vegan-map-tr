@@ -1,35 +1,36 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
 import "./PlaceModal.css";
 
 export default function PlaceModal({ place, onClose }) {
-  const API_URL = import.meta.env.VITE_API_URL;
-  const [reviews, setReviews] = useState([]);
-  const [form, setForm] = useState({
-    queerScore: 5,
-    queerEmployment: "hayır",
-    employmentExperience: "",
-    animalScore: 5,
-    veganScore: 5,
-    veganPrice: "normal",
-    comment: "",
-    flagged: false,
-  });
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <button className="close-btn" onClick={onClose}>×</button>
 
-  useEffect(() => {
-    axios
-      .get(`${API_URL}/api/places/${place.id}/reviews`)
-      .then(res => setReviews(res.data));
-  }, [place.id]);
+        <h2>{place.name}</h2>
+        <p>{place.address}</p>
 
-  const submit = async () => {
-    await axios.post(`${API_URL}/api/reviews/${place.id}`, {
-      ...form,
-      placeName: place.name,
-      lat: place.lat,
-      lng: place.lng,
-    });
-    onClose();
-  };
+        <form>
+          <label>
+            Queer bireylere saygı (1–10)
+            <input type="number" min="1" max="10" />
+          </label>
 
+          <label>
+            Queer istihdamı var mı?
+            <select>
+              <option>Evet</option>
+              <option>Hayır</option>
+            </select>
+          </label>
+
+          <label>
+            Yorum
+            <textarea />
+          </label>
+
+          <button type="submit">Gönder</button>
+        </form>
+      </div>
+    </div>
+  );
 }

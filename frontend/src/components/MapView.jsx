@@ -1,74 +1,47 @@
-import { useEffect, useMemo, useState } from "react";
-import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
-import axios from "axios";
-import PlaceModal from "./PlaceModal";
+import { useEffect } from "react";
 
-export default function MapView() {
-  const libraries = useMemo(() => ["places"], []);
-  const center = useMemo(() => ({ lat: 39.92, lng: 32.85 }), []);
-
-  const API_URL = import.meta.env.VITE_API_URL;
-  const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: GOOGLE_KEY,
-    libraries,
-  });
-
-  const [places, setPlaces] = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState(null);
-  const [reviews, setReviews] = useState([]);
-
-  // 📍 Mekanları çek
+export default function MapView({ places, onPlaceClick }) {
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!window.google) return;
 
-    axios
-      .get(`${API_URL}/api/places`)
-      .then((res) => setPlaces(res.data))
-      .catch((err) => console.error(err));
-  }, [isLoaded, API_URL]);
+    const map = new window.google.maps.Map(
+      document.getElementById("map"),
+      {
+        center: { lat: 39.92077, lng: 32.85411 }, // Ankara merkez
+        zoom: 13,
+        disableDefaultUI: true,
+      }
+    );
 
-  // 📍 Mekana tıklanınca yorumları çek
-  useEffect(() => {
-    if (!selectedPlace) return;
+    places.forEach((place) => {
+      if (!place.lat || !place.lng) return;
 
-    axios
-      .get(`${API_URL}/api/places/${selectedPlace.id}/reviews`)
-      .then((res) => setReviews(res.data))
-      .catch((err) => console.error(err));
-  }, [selectedPlace, API_URL]);
+      const marker = new window.google.maps.Marker({
+        position: {
+          lat: Number(place.lat),
+          lng: Number(place.lng),
+        },
+        map,
+        title: place.name,
+      });
 
-  if (loadError) return <p>Harita yüklenemedi</p>;
-  if (!isLoaded) return <p>Harita yükleniyor…</p>;
+      // ⭐ KRİTİK KISIM
+      marker.addListener("click", () => {
+        onPlaceClick(place);
+      });
+    });
+
+    // cleanup
+    return () => {};
+  }, [places, onPlaceClick]);
 
   return (
-    <>
-      <GoogleMap
-        mapContainerStyle={{ width: "100%", height: "100%" }}
-        center={center}
-        zoom={13}
-        options={{ disableDefaultUI: true, zoomControl: true }}
-      >
-        {places.map((place) => (
-          <MarkerF
-            key={place.id}
-            position={{
-              lat: Number(place.lat),
-              lng: Number(place.lng),
-            }}
-            onClick={() => setSelectedPlace(place)}   // ⭐ KRİTİK SATIR
-          />
-        ))}
-      </GoogleMap>
-
-      {selectedPlace && (
-        <PlaceModal
-          place={selectedPlace}
-          reviews={reviews}
-          onClose={() => setSelectedPlace(null)}
-        />
-      )}
-    </>
+    <div
+      id="map"
+      style={{
+        width: "100%",
+        height: "100vh",
+      }}
+    />
   );
 }
