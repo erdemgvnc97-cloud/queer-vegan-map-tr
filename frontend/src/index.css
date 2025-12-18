@@ -1,32 +1,42 @@
-/* frontend/src/index.css */
-body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(180deg, #fff8f0 0%, #f0f7f4 100%);
-  color: #1d1d1f;
-  margin: 0;
-}
-
-/* Buradaki .navbar stilini sildik çünkü Navbar.css içinden yönetiliyor */
-
-.main-container {
-  padding: 1rem; /* Üst boşluğu azalttık */
-  text-align: center;
-}
-
-.page {
-  max-width: 800px;
+/* Ana Konteyner */
+.home-container {
+  max-width: 1100px;
   margin: 0 auto;
-  text-align: left;
-  line-height: 1.6;
-  padding-bottom: 50px; /* Alt kısma nefes payı */
+  padding: 20px; [cite: 30]
 }
 
-.insta-btn {
-  display: inline-block;
-  margin-top: 20px;
-  background-color: #ff66b3;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 8px;
-  text-decoration: none;
+/* Başlık Bölümü */
+.hero-section {
+  margin-bottom: 40px;
+  animation: fadeIn 1s ease-in;
+}
+
+.main-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #cba6f7, #ff66b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px; [cite: 81]
+}
+
+.subtitle {
+  color: #555;
+  font-size: 1.1rem;
+  max-width: 700px;
+  margin: 0 auto; [cite: 81]
+}
+
+/* Harita Çerçevesi */
+.map-wrapper {
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 4px solid white; [cite: 35, 46]
+}
+
+/* Animasyon */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
