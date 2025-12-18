@@ -1,3 +1,4 @@
+/* frontend/src/App.jsx */
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -12,9 +13,7 @@ export default function App() {
       <Navbar />
       <main className="main-container">
         <Routes>
-          {/* Ana sayfa için / route'u ekleyin */}
           <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
           <Route path="/guide" element={<Guide />} />
           <Route path="/neden" element={<Neden />} />
           <Route path="/contact" element={<Contact />} />
