@@ -1,47 +1,27 @@
-import { useEffect } from "react";
+import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 
 export default function MapView({ places, onPlaceClick }) {
-  useEffect(() => {
-    if (!window.google) return;
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  });
 
-    const map = new window.google.maps.Map(
-      document.getElementById("map"),
-      {
-        center: { lat: 39.92077, lng: 32.85411 }, // Ankara merkez
-        zoom: 13,
-        disableDefaultUI: true,
-      }
-    );
+  console.log("MapView places:", places);
 
-    places.forEach((place) => {
-      if (!place.lat || !place.lng) return;
-
-      const marker = new window.google.maps.Marker({
-        position: {
-          lat: Number(place.lat),
-          lng: Number(place.lng),
-        },
-        map,
-        title: place.name,
-      });
-
-      // ⭐ KRİTİK KISIM
-      marker.addListener("click", () => {
-        onPlaceClick(place);
-      });
-    });
-
-    // cleanup
-    return () => {};
-  }, [places, onPlaceClick]);
+  if (!isLoaded) return <div>Harita yükleniyor...</div>;
 
   return (
-    <div
-      id="map"
-      style={{
-        width: "100%",
-        height: "100vh",
-      }}
-    />
+    <GoogleMap
+      zoom={6}
+      center={{ lat: 39, lng: 35 }}
+      mapContainerStyle={{ width: "100%", height: "80vh" }}
+    >
+      {places.map((place) => (
+        <Marker
+          key={place._id}
+          position={{ lat: place.lat, lng: place.lng }}
+          onClick={() => onPlaceClick(place)}
+        />
+      ))}
+    </GoogleMap>
   );
 }
