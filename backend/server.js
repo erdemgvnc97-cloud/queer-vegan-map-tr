@@ -4,77 +4,113 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+/* =========================
+   FIREBASE INIT
+========================= */
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
     }),
   });
 }
 
 const db = admin.firestore();
 
-/* 📍 Mekanlar */
-app.get("/api/places", async (_, res) => {
-  const snap = await db.collection("places").get();
-  res.json(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+/* =========================
+   GET → TÜM MEKANLAR
+========================= */
+app.get("/api/places", async (req, res) => {
+  try {
+    const snapshot = await db.collection("places").get();
+    const places = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    res.json(places);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-/* 📍 Yorumlar */
+/* =========================
+   GET → MEKAN YORUMLARI
+========================= */
 app.get("/api/places/:id/reviews", async (req, res) => {
-  const snap = await db
-    .collection("places")
-    .doc(req.params.id)
-    .collection("reviews")
-    .orderBy("timestamp", "desc")
-    .get();
+  try {
+    const snapshot = await db
+      .collection("places")
+      .doc(req.params.id)
+      .collection("reviews")
+      .orderBy("timestamp", "desc")
+      .get();
 
-  res.json(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const reviews = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-/* ✍️ Yeni Yorum */
-app.post("/api/reviews/:id", async (req, res) => {
-  const { id } = req.params;
-  const data = req.body;
+/* =========================
+   POST → YENİ YORUM
+========================= */
+app.post("/api/reviews/:placeId", async (req, res) => {
+  try {
+    const { placeId } = req.params;
+    const data = req.body;
 
-  const placeRef = db.collection("places").doc(id);
-  const placeDoc = await placeRef.get();
+    const placeRef = db.collection("places").doc(placeId);
+    const placeSnap = await placeRef.get();
 
-  if (!placeDoc.exists) {
-    await placeRef.set({
-      name: data.placeName,
-      lat: parseFloat(data.lat),
-      lng: parseFloat(data.lng),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    // 🔹 Mekan yoksa oluştur
+    if (!placeSnap.exists) {
+      await placeRef.set({
+        name: data.placeName || "Unnamed place",
+        lat: Number(data.lat),
+        lng: Number(data.lng),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    // 🔹 Yorumu ekle
+    await placeRef.collection("reviews").add({
+      queerRespect: Number(data.queerRespect),
+      queerEmployment: Boolean(data.queerEmployment),
+      animalFriendly: Number(data.animalFriendly),
+      veganQuality: Number(data.veganQuality),
+      veganPrice: data.veganPrice, // "ucuz" | "normal" | "pahali"
+      employmentExperience: data.employmentExperience || "",
+      comment: data.comment || "",
+      flag: Boolean(data.flag),
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+});
 
-  // 🛡️ Basit spam önlemi
-  if (!data.comment || data.comment.length < 10) {
-    return res.status(400).json({ error: "Yorum çok kısa" });
-  }
-
-  await placeRef.collection("reviews").add({
-    nickname: data.nickname || "Anonim",
-    queerScore: Number(data.queerScore),
-    queerEmployment: data.queerEmployment,
-    employmentExperience: data.employmentExperience || null,
-    animalScore: Number(data.animalScore),
-    veganScore: Number(data.veganScore),
-    veganPrice: data.veganPrice,
-    flagged: data.flagged || false,
-    comment: data.comment,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  res.json({ success: true });
+/* =========================
+   HEALTH CHECK
+========================= */
+app.get("/", (req, res) => {
+  res.send("🚀 Queer Vegan Map Backend is running");
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log("🚀 Backend ready"));
+app.listen(PORT, () =>
+  console.log(`🔥 Backend running on port ${PORT}`)
+);
