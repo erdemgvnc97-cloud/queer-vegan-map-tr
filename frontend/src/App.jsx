@@ -7,7 +7,7 @@ function App() {
   const [selectedPlace, setSelectedPlace] = useState(null);
 
   useEffect(() => {
-    fetch("https://BACKEND_URL/api/places")
+    fetch("https://queer-vegan-map-tr.onrender.com/api/places")
       .then((res) => res.json())
       .then((data) => setPlaces(data))
       .catch(console.error);
