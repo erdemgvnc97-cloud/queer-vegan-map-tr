@@ -8,7 +8,7 @@ export default function Navbar() {
        <h1 className="logo">🌱 Queer Vegan Map</h1>
        <div className="links">
          <Link to="/">Harita</Link>
-         <Link to="/guide">Vegan Rehberi</Link>
+         <Link to="/rehber">Vegan Rehberi</Link>
          <Link to="/neden">Neden?</Link>
          <Link to="/iletisim">İletişim</Link>
        </div>
