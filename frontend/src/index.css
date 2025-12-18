@@ -1,9 +1,9 @@
-/* Yazı Tipleri ve Genel Ayarlar */
+/* Yazı Tipleri */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800;900&display=swap');
 
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: #fffcf9; /* Göz yormayan, premium kırık beyaz */
+  background-color: #fffcf9; /* Apple tarzı temiz kırık beyaz */
   color: #1d1d1f;
   margin: 0;
   padding: 0;
@@ -11,7 +11,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Ana Konteyner */
+/* Ana Konteyner Düzeni */
 .main-container {
   padding: 0;
   width: 100%;
@@ -21,50 +21,50 @@ body {
 .home-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 1.5rem;
 }
 
-/* Hero Bölümü */
+/* Başlık ve Hero Tasarımı */
 .hero-section {
   text-align: left;
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
   padding: 0 1rem;
 }
 
 .main-title {
-  font-size: 3.5rem;
+  font-size: 3.8rem;
   font-weight: 900;
   letter-spacing: -0.05em;
+  line-height: 1.1;
   background: linear-gradient(90deg, #cba6f7, #ff66b3);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
-  line-height: 1;
+  margin-bottom: 1rem;
 }
 
 .subtitle {
   color: #86868b;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 500;
-  max-width: 600px;
-  line-height: 1.5;
+  max-width: 650px;
+  line-height: 1.6;
 }
 
-/* 📍 Harita Çerçevesi (Kritik Düzenleme) */
+/* 📍 Harita Çerçevesi (Kritik Genişlik ve Tasarım) */
 .map-wrapper {
   position: relative;
   width: 100%;
-  height: 750px; /* Dar görünmeyi engelleyen yüksekliğimiz */
-  border-radius: 40px; /* Çok daha yuvarlak ve modern hatlar */
+  height: 750px; /* Dar görünmeyi bitiren yükseklik */
+  border-radius: 40px; /* Modern ve yumuşak köşeler */
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-  border: 12px solid white; /* Kalın beyaz çerçeve ile Apple hissi */
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.15);
+  border: 10px solid white; /* Apple hissi veren kalın çerçeve */
   background: #f5f5f7;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Butonlar ve Etkileşimler (Canlılık burada) */
+/* Buton Canlılığı ve Efektler */
 button {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -73,64 +73,36 @@ button {
 }
 
 button:active {
-  transform: scale(0.95); /* Tıklayınca içe çökme efekti */
+  transform: scale(0.94); /* Dokunmatik hissi veren küçülme */
 }
 
-/* Modern Form Elemanları */
-input[type="range"] {
-  height: 6px;
-  border-radius: 10px;
-  background: #e2e8f0;
-  appearance: none;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: #ff66b3;
-  border-radius: 50%;
-  border: 3px solid white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
+/* Form Elemanları ve Inputlar */
 textarea, input[type="text"] {
   border: 2px solid #f2f2f7;
   background-color: #f5f5f7;
-  border-radius: 20px;
-  padding: 1rem;
+  border-radius: 24px;
+  padding: 1.2rem;
   font-family: inherit;
   font-size: 1rem;
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 textarea:focus, input[type="text"]:focus {
   background-color: white;
   border-color: #cba6f7;
-  box-shadow: 0 0 0 4px rgba(203, 166, 247, 0.1);
+  box-shadow: 0 0 0 5px rgba(203, 166, 247, 0.15);
 }
 
-/* Animasyonlar */
+/* Yan Panel Animasyonu */
 .animate-in {
-  animation: slideRight 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slidePanel 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideRight {
+@keyframes slidePanel {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
-}
-
-/* Mobil Uyumluluk */
-@media (max-width: 768px) {
-  .main-title {
-    font-size: 2.2rem;
-  }
-  
-  .map-wrapper {
-    height: 600px;
-    border-radius: 30px;
-    border-width: 6px;
-  }
 }
 
 /* Scrollbar Tasarımı */
@@ -146,4 +118,11 @@ textarea:focus, input[type="text"]:focus {
   background: #d1d1d6;
   border-radius: 10px;
   border: 2px solid white;
+}
+
+/* Mobil Optimizasyon */
+@media (max-width: 768px) {
+  .main-title { font-size: 2.5rem; }
+  .map-wrapper { height: 600px; border-radius: 30px; border-width: 6px; }
+  .home-container { padding: 1rem; }
 }
