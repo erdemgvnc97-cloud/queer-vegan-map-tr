@@ -1,3 +1,4 @@
+if (!place) return null;
 import { useEffect, useState } from "react";
 import "./PlaceModal.css";
 
