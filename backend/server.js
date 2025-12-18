@@ -1,4 +1,3 @@
-// backend/server.js
 import express from "express";
 import admin from "firebase-admin";
 import cors from "cors";
@@ -9,6 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Firebase Başlatma
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -20,7 +20,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 📍 Haritadaki noktaları getiren ana rota
+// 📍 Haritadaki noktaları getiren ana rota (404 hatasını çözer)
 app.get("/api/places", async (req, res) => {
   try {
     const snapshot = await db.collection("places").get();
@@ -29,7 +29,7 @@ app.get("/api/places", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 📍 Yorumları getiren rota
+// 📍 Seçilen mekanın yorumlarını getiren rota
 app.get("/api/places/:id/reviews", async (req, res) => {
   try {
     const snapshot = await db.collection("places").doc(req.params.id)
@@ -38,24 +38,33 @@ app.get("/api/places/:id/reviews", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 📍 Yorum kaydeden rota
+// 📍 Yeni deneyim kaydetme rotası
 app.post("/api/reviews/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
     const placeRef = db.collection("places").doc(id);
     const doc = await placeRef.get();
+
     if (!doc.exists) {
-      await placeRef.set({ name: data.placeName, lat: parseFloat(data.lat), lng: parseFloat(data.lng), createdAt: admin.firestore.FieldValue.serverTimestamp() });
+      await placeRef.set({
+        name: data.placeName, lat: parseFloat(data.lat), lng: parseFloat(data.lng),
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
     }
+
     await placeRef.collection("reviews").add({
-      nickname: data.nickname, queerScore: parseInt(data.queerScore),
-      queerEmployment: data.queerEmployment, veganScore: parseInt(data.veganScore),
-      veganPrice: data.veganPrice, comment: data.comment, timestamp: admin.firestore.FieldValue.serverTimestamp()
+      nickname: data.nickname,
+      queerScore: parseInt(data.queerScore),
+      queerEmployment: data.queerEmployment, // Evet-Hayır alanı
+      veganScore: parseInt(data.veganScore),
+      veganPrice: data.veganPrice, // Uygun-Orta-Yüksek alanı
+      comment: data.comment,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server ready on ${PORT}`));
