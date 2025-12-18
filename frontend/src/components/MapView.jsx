@@ -1,24 +1,31 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
 import axios from "axios";
-import { MapPin, Info, Star, Briefcase, Leaf, Banknote, Send, MessageCircle } from "lucide-react";
+import { MapPin, Info, Star, Briefcase, Leaf, Banknote, Send, MessageCircle, X } from "lucide-react";
 
 const LIBRARIES = ["places"];
-const mapContainerStyle = { height: "45vh", width: "100%" };
+const mapContainerStyle = { height: "100%", width: "100%" };
 const center = { lat: 39.9208, lng: 32.8541 };
+
+// Harita Stilini Sadeleştiriyoruz (Opsiyonel: Daha temiz görünüm için)
+const mapOptions = {
+  disableDefaultUI: true,
+  zoomControl: false,
+  clickableIcons: true,
+  styles: [
+    { featureType: "poi.business", elementType: "labels", stylers: [{ visibility: "on" }] },
+    { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] }
+  ]
+};
 
 const MapView = () => {
   const [map, setMap] = useState(null);
   const [places, setPlaces] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [selectedReviews, setSelectedReviews] = useState([]); // Geçmiş yorumlar için
+  const [selectedReviews, setSelectedReviews] = useState([]);
   const [review, setReview] = useState({
-    nickname: "", 
-    queerScore: 3, 
-    queerEmployment: "Hayır",
-    veganScore: 3, 
-    veganPrice: "Orta", 
-    comment: ""
+    nickname: "", queerScore: 3, queerEmployment: "Hayır",
+    veganScore: 3, veganPrice: "Orta", comment: ""
   });
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -27,9 +34,16 @@ const MapView = () => {
     libraries: LIBRARIES,
   });
 
-  const onLoad = useCallback((m) => setMap(m), []);
+  // Mekanın yorumlarını getiren fonksiyon (Tekrar kullanabilmek için dışarı aldık)
+  const fetchReviews = async (placeId) => {
+    try {
+      const res = await axios.get(`${API_URL}/api/places/${placeId}/reviews`);
+      setSelectedReviews(res.data);
+    } catch (err) {
+      setSelectedReviews([]);
+    }
+  };
 
-  // Haritadaki kayıtlı işaretçileri çek
   useEffect(() => {
     if (isLoaded && API_URL) {
       axios.get(`${API_URL}/api/places`).then(res => setPlaces(res.data));
@@ -42,13 +56,14 @@ const MapView = () => {
       const service = new window.google.maps.places.PlacesService(map);
       service.getDetails({ placeId: e.placeId }, (place, status) => {
         if (status === "OK") {
-          const placeData = { id: place.place_id, name: place.name, lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
+          const placeData = { 
+            id: place.place_id, 
+            name: place.name, 
+            lat: place.geometry.location.lat(), 
+            lng: place.geometry.location.lng() 
+          };
           setSelected(placeData);
-          
-          // 📥 Seçilen mekanın geçmiş yorumlarını çek
-          axios.get(`${API_URL}/api/places/${place.place_id}/reviews`)
-            .then(res => setSelectedReviews(res.data))
-            .catch(() => setSelectedReviews([]));
+          fetchReviews(place.place_id); // Mekana tıklandığında yorumları çek
         }
       });
     }
@@ -65,122 +80,141 @@ const MapView = () => {
       });
       if (res.data.success) {
         alert("🌈 Deneyim kaydedildi!");
-        // Yorum listesini anında güncelle
-        setSelectedReviews([{ ...review, timestamp: new Date() }, ...selectedReviews]);
+        fetchReviews(selected.id); // Kayıttan sonra listeyi yenile
         setReview({ nickname: "", queerScore: 3, queerEmployment: "Hayır", veganScore: 3, veganPrice: "Orta", comment: "" });
       }
-    } catch (err) { alert("Hata oluştu! Lütfen tekrar dene."); }
+    } catch (err) { alert("Hata oluştu!"); }
   };
 
-  if (!isLoaded) return <div className="p-10 text-center font-bold">Harita Yükleniyor...</div>;
+  if (!isLoaded) return <div className="h-screen flex items-center justify-center font-bold text-gray-400">Harita Hazırlanıyor...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-2 md:p-4 pb-20">
-      {/* Harita */}
-      <div className="rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white mb-6 h-[40vh]">
-        <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={13} onLoad={onLoad} onClick={handleMapClick} options={{ clickableIcons: true, disableDefaultUI: true, zoomControl: true }}>
-          {places.map(p => <MarkerF key={p.id} position={{ lat: Number(p.lat), lng: Number(p.lng) }} onClick={() => setSelected(p)} />)}
+    <div className="relative h-[calc(100vh-80px)] w-full overflow-hidden bg-gray-50">
+      
+      {/* Harita Katmanı */}
+      <div className="absolute inset-0 z-0">
+        <GoogleMap 
+          mapContainerStyle={mapContainerStyle} 
+          center={center} 
+          zoom={13} 
+          onLoad={(m) => setMap(m)} 
+          onClick={handleMapClick} 
+          options={mapOptions}
+        >
+          {places.map(p => (
+            <MarkerF key={p.id} position={{ lat: Number(p.lat), lng: Number(p.lng) }} onClick={() => {
+              setSelected(p);
+              fetchReviews(p.id);
+            }} />
+          ))}
         </GoogleMap>
       </div>
 
-      {selected ? (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 transition-all">
-          {/* Mekan Bilgi Kartı ve Form */}
-          <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-2xl border border-pink-50 text-left">
-            <div className="flex items-center gap-3 mb-6 border-b pb-4">
-              <MapPin className="text-pink-500" />
-              <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{selected.name}</h3>
-            </div>
+      {/* Modern Side Panel / Form Overlay */}
+      {selected && (
+        <div className="absolute inset-0 z-10 flex flex-col items-end pointer-events-none">
+          <div className="w-full md:w-[450px] h-full bg-white/95 backdrop-blur-md shadow-2xl pointer-events-auto overflow-y-auto animate-in slide-in-from-right duration-300 border-l border-gray-100">
+            
+            {/* Panel Kapatma Butonu */}
+            <button onClick={() => setSelected(null)} className="absolute top-6 right-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-all">
+              <X size={20} className="text-gray-500" />
+            </button>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Queer Tutum */}
-              <div className="bg-purple-50 p-5 rounded-3xl">
-                <label className="block text-sm font-bold text-purple-800 mb-3">Queer bireylere karşı tutum nasıl? (1-5)</label>
-                <div className="flex gap-4 items-center">
-                  <input type="range" min="1" max="5" value={review.queerScore} onChange={e => setReview({...review, queerScore: e.target.value})} className="w-full accent-purple-600 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer" />
-                  <span className="font-black text-purple-700 text-xl">{review.queerScore}</span>
-                </div>
+            <div className="p-8">
+              <div className="mb-10 pt-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-500 mb-2 block">Mekan Detayı</span>
+                <h3 className="text-3xl font-black text-gray-900 leading-tight">{selected.name}</h3>
               </div>
 
-              {/* İstihdam - Butonlar artık renk değiştiriyor */}
-              <div className="bg-purple-50 p-5 rounded-3xl">
-                <label className="block text-sm font-bold text-purple-800 mb-3 font-bold">Mekan queer bireylere istihdam sağlıyor mu?</label>
-                <div className="flex gap-3">
-                  {["Evet", "Hayır"].map(o => (
-                    <button key={o} type="button" onClick={() => setReview({...review, queerEmployment: o})} 
-                      className={`flex-1 py-3 rounded-2xl font-black transition-all border-2 ${review.queerEmployment === o ? 'bg-purple-600 text-white border-purple-600 shadow-lg' : 'bg-white text-purple-600 border-purple-200'}`}>
-                      {o}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Vegan Seçenekler */}
-              <div className="bg-green-50 p-5 rounded-3xl">
-                <label className="block text-sm font-bold text-green-800 mb-3 font-bold">Vegan seçenekler yeterli mi? (1-5)</label>
-                <div className="flex gap-4 items-center">
-                  <input type="range" min="1" max="5" value={review.veganScore} onChange={e => setReview({...review, veganScore: e.target.value})} className="w-full accent-green-600 h-2 bg-green-200 rounded-lg appearance-none cursor-pointer" />
-                  <span className="font-black text-green-700 text-xl">{review.veganScore}</span>
-                </div>
-              </div>
-
-              {/* Fiyat Ortalaması - Butonlar artık renk değiştiriyor */}
-              <div className="bg-green-50 p-5 rounded-3xl">
-                <label className="block text-sm font-bold text-green-800 mb-3 font-bold">Vegan seçeneklerin fiyat ortalaması nasıl?</label>
-                <div className="flex gap-2">
-                  {["Uygun", "Orta", "Yüksek"].map(p => (
-                    <button key={p} type="button" onClick={() => setReview({...review, veganPrice: p})} 
-                      className={`flex-1 py-3 rounded-xl text-xs font-black transition-all border-2 ${review.veganPrice === p ? 'bg-green-600 text-white border-green-600 shadow-lg' : 'bg-white text-green-700 border-green-200'}`}>
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <textarea placeholder="Deneyimlerin nasıldı?..." className="w-full p-5 rounded-[2rem] border-2 border-gray-100 outline-none focus:border-pink-300 min-h-[120px] text-sm bg-gray-50/50" value={review.comment} onChange={e => setReview({...review, comment: e.target.value})} />
-                <input type="text" placeholder="Kullanıcı Nickname:" className="w-full p-4 rounded-xl border-2 border-gray-100 outline-none focus:border-pink-300 bg-gray-50/50 font-bold" value={review.nickname} onChange={e => setReview({...review, nickname: e.target.value})} />
-              </div>
-
-              <button type="submit" className="w-full py-6 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white font-black rounded-[2rem] shadow-xl hover:shadow-pink-200 active:scale-95 transition-all flex items-center justify-center gap-3 text-lg">
-                <Send size={24} /> DENEYİMİ KAYDET
-              </button>
-            </form>
-          </div>
-
-          {/* Geçmiş Yorumlar Bölümü */}
-          <div className="bg-white/60 backdrop-blur-md p-6 rounded-[2.5rem] shadow-xl border border-white">
-            <h4 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
-              <MessageCircle className="text-pink-500" /> TOPLULUK DENEYİMLERİ ({selectedReviews.length})
-            </h4>
-            <div className="space-y-4">
-              {selectedReviews.length > 0 ? (
-                selectedReviews.map((rev, idx) => (
-                  <div key={idx} className="bg-white p-5 rounded-3xl border border-pink-50 shadow-sm text-left">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-black text-purple-700">@{rev.nickname}</span>
-                      <div className="flex gap-1">
-                        <span className="bg-purple-100 text-purple-700 text-[9px] font-bold px-2 py-1 rounded-full uppercase">Queer: {rev.queerScore}</span>
-                        <span className="bg-green-100 text-green-700 text-[9px] font-bold px-2 py-1 rounded-full uppercase">Vegan: {rev.veganScore}</span>
-                      </div>
+              {/* Deneyim Yazma Formu */}
+              <form onSubmit={handleSubmit} className="space-y-8">
+                
+                <section>
+                  <h4 className="text-xs font-black uppercase text-gray-400 mb-4 flex items-center gap-2">
+                    <Star size={14} /> Queer Deneyimi
+                  </h4>
+                  <div className="space-y-6">
+                    <div className="bg-purple-50/50 p-6 rounded-[2rem] border border-purple-100">
+                      <p className="text-xs font-bold text-purple-800 mb-4">Queer tutum puanı: <span className="text-lg ml-1">{review.queerScore}</span></p>
+                      <input type="range" min="1" max="5" value={review.queerScore} onChange={e => setReview({...review, queerScore: e.target.value})} className="w-full accent-purple-600 cursor-pointer" />
                     </div>
-                    <p className="text-gray-600 text-sm italic">"{rev.comment}"</p>
-                    <div className="mt-3 flex gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                      <span>💰 {rev.veganPrice}</span>
-                      <span>💼 İstihdam: {rev.queerEmployment}</span>
+                    <div className="flex gap-2">
+                      {["Evet", "Hayır"].map(o => (
+                        <button key={o} type="button" onClick={() => setReview({...review, queerEmployment: o})} 
+                          className={`flex-1 py-4 rounded-2xl font-black transition-all text-sm ${review.queerEmployment === o ? 'bg-purple-600 text-white shadow-xl' : 'bg-white border-2 border-purple-100 text-purple-600'}`}>
+                          {o === "Evet" ? "İstihdam Var ✅" : "İstihdam Yok ❌"}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="py-10 text-gray-400 font-bold italic">Henüz yorum yok. İlk sen yaz! 🏳️‍🌈</p>
-              )}
+                </section>
+
+                <section>
+                  <h4 className="text-xs font-black uppercase text-gray-400 mb-4 flex items-center gap-2">
+                    <Leaf size={14} /> Vegan Deneyimi
+                  </h4>
+                  <div className="space-y-6">
+                    <div className="bg-green-50/50 p-6 rounded-[2rem] border border-green-100">
+                      <p className="text-xs font-bold text-green-800 mb-4">Vegan seçenek puanı: <span className="text-lg ml-1">{review.veganScore}</span></p>
+                      <input type="range" min="1" max="5" value={review.veganScore} onChange={e => setReview({...review, veganScore: e.target.value})} className="w-full accent-green-600 cursor-pointer" />
+                    </div>
+                    <div className="flex gap-2">
+                      {["Uygun", "Orta", "Yüksek"].map(p => (
+                        <button key={p} type="button" onClick={() => setReview({...review, veganPrice: p})} 
+                          className={`flex-1 py-3 rounded-xl font-black text-[10px] transition-all border-2 ${review.veganPrice === p ? 'bg-green-600 text-white border-green-600 shadow-lg' : 'bg-white text-green-700 border-green-100'}`}>
+                          {p.toUpperCase()} FİYAT
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                <div className="space-y-4">
+                  <textarea placeholder="Atmosfer nasıldı? Güvende hissettin mi?..." className="w-full p-6 rounded-[2rem] border-2 border-gray-100 outline-none focus:border-pink-300 min-h-[140px] text-sm bg-gray-50" value={review.comment} onChange={e => setReview({...review, comment: e.target.value})} />
+                  <input type="text" placeholder="Kullanıcı Nickname" className="w-full p-5 rounded-2xl border-2 border-gray-100 outline-none focus:border-pink-300 font-bold text-sm" value={review.nickname} onChange={e => setReview({...review, nickname: e.target.value})} />
+                </div>
+
+                <button type="submit" className="w-full py-6 bg-black text-white font-black rounded-[2rem] shadow-2xl hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center gap-3 text-lg">
+                  DENEYİMİ YAYINLA
+                </button>
+              </form>
+
+              {/* Geçmiş Yorumlar - Tasarımı sadeleştirildi */}
+              <div className="mt-16 pt-10 border-t border-gray-100">
+                <h4 className="text-sm font-black text-gray-900 mb-8 flex items-center gap-2 uppercase tracking-widest">
+                  <MessageCircle size={18} /> Topluluk Sesleri ({selectedReviews.length})
+                </h4>
+                <div className="space-y-8">
+                  {selectedReviews.length > 0 ? (
+                    selectedReviews.map((rev, idx) => (
+                      <div key={idx} className="relative pl-6 border-l-2 border-pink-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-black text-gray-900">@{rev.nickname}</span>
+                          <span className="text-[10px] text-gray-400 font-bold">• {new Date(rev.timestamp?.seconds * 1000).toLocaleDateString('tr-TR')}</span>
+                        </div>
+                        <p className="text-gray-500 text-sm leading-relaxed mb-4">"{rev.comment}"</p>
+                        <div className="flex gap-2">
+                          <span className="bg-gray-100 text-gray-600 text-[9px] font-black px-3 py-1 rounded-full uppercase">Q: {rev.queerScore}</span>
+                          <span className="bg-gray-100 text-gray-600 text-[9px] font-black px-3 py-1 rounded-full uppercase">V: {rev.veganScore}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-10">
+                      <p className="text-gray-300 font-bold italic text-sm">Henüz kimse bir şey yazmamış.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      ) : (
-        <div className="p-12 bg-white/40 backdrop-blur-md border-4 border-dashed border-pink-200 rounded-[3rem] text-center shadow-inner">
-          <Info className="mx-auto text-pink-300 mb-3 shadow-sm" size={48} />
-          <p className="text-gray-500 font-black text-xl uppercase italic tracking-tighter">Bir mekana tıkla ve topluluğa katıl!</p>
+      )}
+
+      {/* Mekan Seçilmediğinde Görünen Küçük İpucu Balonu */}
+      {!selected && (
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 w-[280px] bg-black text-white p-4 rounded-3xl shadow-2xl text-center animate-bounce">
+          <p className="text-[11px] font-black uppercase tracking-widest">Haritadan bir yer seç ve başla! 📍</p>
         </div>
       )}
     </div>
