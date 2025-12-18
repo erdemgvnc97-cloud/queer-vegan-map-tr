@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MapView from "./components/MapView";
 import PlaceModal from "./components/PlaceModal";
 
 function App() {
+  const [places, setPlaces] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
+
+  useEffect(() => {
+    fetch("https://BACKEND_URL/api/places")
+      .then((res) => res.json())
+      .then((data) => setPlaces(data))
+      .catch(console.error);
+  }, []);
 
   return (
     <>
       <MapView
-        places={placesFromBackend}
+        places={places}
         onPlaceClick={(place) => setSelectedPlace(place)}
       />
 
