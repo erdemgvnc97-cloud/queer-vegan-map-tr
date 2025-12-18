@@ -60,3 +60,18 @@ html, body, #root {
 .main-content {
   min-height: calc(100vh - 160px); 
 }
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+}
+
