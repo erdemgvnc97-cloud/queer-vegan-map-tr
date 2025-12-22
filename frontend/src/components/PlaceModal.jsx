@@ -8,6 +8,7 @@ export default function PlaceModal({ place, onClose }) {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
+    nickname: "",
     queerRespect: 5,
     queerEmployment: false,
     animalFriendly: 5,
@@ -17,7 +18,19 @@ export default function PlaceModal({ place, onClose }) {
     flag: false,
   });
 
-  // 🔹 Modal kapalıysa hiçbir şey render etme
+  // 🪄 Kullanıcı takma adını localStorage'dan getir
+  useEffect(() => {
+    const savedName = localStorage.getItem("nickname");
+    if (savedName) {
+      setForm((f) => ({ ...f, nickname: savedName }));
+    }
+  }, []);
+
+  // 💾 Takma ad değiştikçe localStorage’a kaydet
+  useEffect(() => {
+    if (form.nickname) localStorage.setItem("nickname", form.nickname);
+  }, [form.nickname]);
+
   if (!place) return null;
 
   // 🔹 Mevcut yorumları çek
@@ -65,76 +78,17 @@ export default function PlaceModal({ place, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <button className="close" onClick={onClose}>
-          ×
-        </button>
-
+        <button className="close" onClick={onClose}>×</button>
         <h2>{place.name}</h2>
 
         {/* 🔹 Önceki Yorumlar */}
         {reviews.length > 0 && (
           <div className="reviews">
             {reviews.map((r) => (
-              <div
-                key={r.id}
-                style={{
-                  background: "rgba(255,255,255,0.8)",
-                  borderRadius: "12px",
-                  padding: "12px 16px",
-                  marginBottom: "12px",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "6px",
-                  }}
-                >
-                  <strong style={{ color: "#222", fontSize: "0.95rem" }}>
-                    {r.nickname || "Anonim"}
-                  </strong>
-                  {r.flag && <span style={{ fontSize: "1.2rem" }}>🚩</span>}
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "#333",
-                    lineHeight: "1.4",
-                  }}
-                >
-                  <div>
-                    🏳️‍🌈 Queer Saygı: <strong>{r.queerRespect}</strong>/10
-                  </div>
-                  <div>
-                    💼 Queer İstihdam: {r.queerEmployment ? "Evet" : "Hayır"}
-                  </div>
-                  <div>
-                    🐾 Hayvan Dostu: <strong>{r.animalFriendly}</strong>/10
-                  </div>
-                  <div>
-                    🥗 Vegan Seçenek: <strong>{r.veganQuality}</strong>/10
-                  </div>
-                  <div>💸 Fiyat: {r.veganPrice}</div>
-
-                  {r.comment && (
-                    <div
-                      style={{
-                        marginTop: "8px",
-                        background: "rgba(255,255,255,0.5)",
-                        borderRadius: "8px",
-                        padding: "8px",
-                        fontStyle: "italic",
-                        color: "#444",
-                      }}
-                    >
-                      “{r.comment}”
-                    </div>
-                  )}
-                </div>
+              <div className="review" key={r.id}>
+                <strong>🌿 {r.nickname || "Anonim"}:</strong>{" "}
+                Queer saygı {r.queerRespect}/10 {r.flag && "🚩"}
+                {r.comment && <div>{r.comment}</div>}
               </div>
             ))}
           </div>
@@ -142,6 +96,18 @@ export default function PlaceModal({ place, onClose }) {
 
         {/* 🔹 Yorum Formu */}
         <form onSubmit={handleSubmit}>
+          <label>
+            Takma adın:
+            <input
+              type="text"
+              name="nickname"
+              value={form.nickname}
+              onChange={handleChange}
+              placeholder="İsmini veya bir takma ad yaz"
+              required
+            />
+          </label>
+
           <label>
             Queer bireylere karşı saygılı davrandılar mı?
             <input

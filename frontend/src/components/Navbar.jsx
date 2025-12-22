@@ -11,6 +11,7 @@ export default function Navbar() {
          <Link to="/rehber">Vegan Rehberi</Link>
          <Link to="/neden">Neden?</Link>
          <Link to="/iletisim">İletişim</Link>
+         <Link to="/istatistik">İstatistik</Link>
        </div>
     </nav>
   );

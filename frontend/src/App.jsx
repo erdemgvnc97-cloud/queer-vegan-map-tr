@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Guide from "./pages/Guide";
+import StatsView from "./views/StatsView";
 import Neden from "./pages/Neden";
 import Contact from "./pages/Contact";
 
@@ -18,6 +19,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/rehber" element={<Guide />} />
+            <Route path="/istatistik" element={<StatsView />} />
             <Route path="/neden" element={<Neden />} />
             <Route path="/iletisim" element={<Contact />} />
           </Routes>
