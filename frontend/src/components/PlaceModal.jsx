@@ -64,10 +64,7 @@ export default function PlaceModal({ place, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-card"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <button className="close" onClick={onClose}>
           ×
         </button>
@@ -78,10 +75,66 @@ export default function PlaceModal({ place, onClose }) {
         {reviews.length > 0 && (
           <div className="reviews">
             {reviews.map((r) => (
-              <div className="review" key={r.id}>
-                <strong>Queer saygı:</strong> {r.queerRespect}/10{" "}
-                {r.flag && "🚩"}
-                {r.comment && <div>{r.comment}</div>}
+              <div
+                key={r.id}
+                style={{
+                  background: "rgba(255,255,255,0.8)",
+                  borderRadius: "12px",
+                  padding: "12px 16px",
+                  marginBottom: "12px",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "6px",
+                  }}
+                >
+                  <strong style={{ color: "#222", fontSize: "0.95rem" }}>
+                    {r.nickname || "Anonim"}
+                  </strong>
+                  {r.flag && <span style={{ fontSize: "1.2rem" }}>🚩</span>}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "#333",
+                    lineHeight: "1.4",
+                  }}
+                >
+                  <div>
+                    🏳️‍🌈 Queer Saygı: <strong>{r.queerRespect}</strong>/10
+                  </div>
+                  <div>
+                    💼 Queer İstihdam: {r.queerEmployment ? "Evet" : "Hayır"}
+                  </div>
+                  <div>
+                    🐾 Hayvan Dostu: <strong>{r.animalFriendly}</strong>/10
+                  </div>
+                  <div>
+                    🥗 Vegan Seçenek: <strong>{r.veganQuality}</strong>/10
+                  </div>
+                  <div>💸 Fiyat: {r.veganPrice}</div>
+
+                  {r.comment && (
+                    <div
+                      style={{
+                        marginTop: "8px",
+                        background: "rgba(255,255,255,0.5)",
+                        borderRadius: "8px",
+                        padding: "8px",
+                        fontStyle: "italic",
+                        color: "#444",
+                      }}
+                    >
+                      “{r.comment}”
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -90,7 +143,7 @@ export default function PlaceModal({ place, onClose }) {
         {/* 🔹 Yorum Formu */}
         <form onSubmit={handleSubmit}>
           <label>
-            Queer bireylere saygı
+            Queer bireylere karşı saygılı davrandılar mı?
             <input
               type="range"
               min="1"
@@ -102,7 +155,7 @@ export default function PlaceModal({ place, onClose }) {
           </label>
 
           <label>
-            Queer istihdam var mı?
+            Queer bireyler istihdam ediyorlar mı?
             <input
               type="checkbox"
               name="queerEmployment"
@@ -112,7 +165,7 @@ export default function PlaceModal({ place, onClose }) {
           </label>
 
           <label>
-            Sokak hayvanlarına duyarlılık
+            Sokak hayvanlarına duyarlılıkları nasıl?
             <input
               type="range"
               min="1"
@@ -124,7 +177,7 @@ export default function PlaceModal({ place, onClose }) {
           </label>
 
           <label>
-            Vegan seçenekler
+            Vegan seçenekler yeterli mi?
             <input
               type="range"
               min="1"
@@ -136,7 +189,7 @@ export default function PlaceModal({ place, onClose }) {
           </label>
 
           <label>
-            Vegan fiyatlandırma
+            Vegan fiyatlandırma nasıl?
             <select
               name="veganPrice"
               value={form.veganPrice}
