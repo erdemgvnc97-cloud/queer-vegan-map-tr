@@ -3,7 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Guide from "./pages/Guide";
-import StatsView from "./views/StatsView";
+import StatsView from "./components/StatsView";
 import Neden from "./pages/Neden";
 import Contact from "./pages/Contact";
 
