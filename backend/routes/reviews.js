@@ -1,6 +1,5 @@
 import express from "express";
 import { db } from "../firebase.js";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -9,7 +8,6 @@ router.post("/:placeId", async (req, res) => {
   try {
     const data = req.body;
 
-    // 🆕 nickname yoksa varsayılan "Anonim"
     const reviewData = {
       placeId: req.params.placeId,
       nickname: data.nickname || "Anonim",
@@ -26,7 +24,7 @@ router.post("/:placeId", async (req, res) => {
       createdAt: new Date(),
     };
 
-    await addDoc(collection(db, "reviews"), reviewData);
+    await db.collection("reviews").add(reviewData);
     res.json({ ok: true });
   } catch (err) {
     console.error("❌ Review eklenemedi:", err);
@@ -37,14 +35,11 @@ router.post("/:placeId", async (req, res) => {
 // 🔹 Mekana ait yorumları getir
 router.get("/:placeId", async (req, res) => {
   try {
-    const q = query(
-      collection(db, "reviews"),
-      where("placeId", "==", req.params.placeId)
-    );
+    const snapshot = await db.collection("reviews")
+      .where("placeId", "==", req.params.placeId)
+      .get();
 
-    const snapshot = await getDocs(q);
     const reviews = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-
     res.json(reviews);
   } catch (err) {
     console.error("❌ Yorumlar çekilemedi:", err);
@@ -52,10 +47,10 @@ router.get("/:placeId", async (req, res) => {
   }
 });
 
-// 🆕 🔹 Tüm yorumları getir (istatistik sayfası için)
+// 🔹 Tüm yorumları getir
 router.get("/all", async (req, res) => {
   try {
-    const snapshot = await getDocs(collection(db, "reviews"));
+    const snapshot = await db.collection("reviews").get();
     const reviews = snapshot.docs.map((d) => ({
       id: d.id,
       ...d.data(),
@@ -66,6 +61,5 @@ router.get("/all", async (req, res) => {
     res.status(500).json({ error: "Veri çekme hatası" });
   }
 });
-
 
 export default router;

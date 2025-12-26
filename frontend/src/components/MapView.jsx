@@ -1,12 +1,10 @@
-// frontend/src/components/MapView.jsx
 import { GoogleMap, Marker, useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 import { useEffect, useState, useRef } from "react";
 import { Search, MapPin, Star, X } from "lucide-react";
-import "./PlaceModal.css";
 
 const center = { lat: 39.0, lng: 35.0 };
 const libraries = ['places'];
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL || "";
 
 // 🎨 Modern Modal Component
 function ModernPlaceModal({ place, onClose }) {
@@ -55,7 +53,7 @@ function ModernPlaceModal({ place, onClose }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch(`${API}/api/reviews/${place.id}`, {
+      const response = await fetch(`${API}/api/reviews/${place.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,7 +63,11 @@ function ModernPlaceModal({ place, onClose }) {
           lng: place.lng,
         }),
       });
-      onClose();
+      
+      if (response.ok) {
+        alert("Yorumun kaydedildi! 💚");
+        onClose();
+      }
     } catch (err) {
       alert("Bir hata oluştu 😿");
     } finally {
@@ -124,7 +126,7 @@ function ModernPlaceModal({ place, onClose }) {
             </div>
           )}
 
-          {/* Review Form - Form tag YOK! */}
+          {/* Review Form */}
           <div className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -326,7 +328,7 @@ export default function MapView() {
   if (loadError) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-red-50 text-red-600 text-xl font-bold">
-        ❌ Harita yüklenemedi
+        ❌ Harita yüklenemedi: {loadError.message}
       </div>
     );
   }

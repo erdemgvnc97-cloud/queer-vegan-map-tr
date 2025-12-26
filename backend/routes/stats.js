@@ -1,13 +1,11 @@
 import express from "express";
 import { db } from "../firebase.js";
-import { collection, getDocs } from "firebase/firestore";
 
 const router = express.Router();
 
-// 🔹 Tüm yorumlardan ortalama değerleri hesapla
 router.get("/", async (req, res) => {
   try {
-    const snapshot = await getDocs(collection(db, "reviews"));
+    const snapshot = await db.collection("reviews").get();
     const reviews = snapshot.docs.map(d => d.data());
 
     if (reviews.length === 0) {
