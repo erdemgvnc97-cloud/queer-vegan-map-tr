@@ -1,51 +1,62 @@
-import express from "express";
-import { db } from "../firebase.js";
+import express from “express”;
+import { db } from “../firebase.js”;
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  try {
-    const snapshot = await db.collection("reviews").get();
-    const reviews = snapshot.docs.map(d => d.data());
+router.get(”/”, async (req, res) => {
+try {
+console.log(“📊 İstatistik isteği alındı”);
 
-    if (reviews.length === 0) {
-      return res.json({
-        queerRespect: 0,
-        queerEmploymentRate: 0,
-        animalFriendly: 0,
-        veganQuality: 0,
-        veganPriceDist: { ucuz: 0, normal: 0, pahali: 0 },
-        total: 0,
-      });
-    }
+```
+const snapshot = await db.collection("reviews").get();
+console.log(`📝 ${snapshot.size} adet yorum bulundu`);
 
-    const total = reviews.length;
+const reviews = snapshot.docs.map(d => d.data());
 
-    const queerRespect = reviews.reduce((sum, r) => sum + (r.queerRespect || 0), 0) / total;
-    const animalFriendly = reviews.reduce((sum, r) => sum + (r.animalFriendly || 0), 0) / total;
-    const veganQuality = reviews.reduce((sum, r) => sum + (r.veganQuality || 0), 0) / total;
+if (reviews.length === 0) {
+  console.log("⚠️ Hiç yorum yok, boş istatistik dönüyorum");
+  return res.json({
+    queerRespect: 0,
+    queerEmploymentRate: 0,
+    animalFriendly: 0,
+    veganQuality: 0,
+    veganPriceDist: { ucuz: 0, normal: 0, pahali: 0 },
+    total: 0,
+  });
+}
 
-    const queerEmploymentRate =
-      (reviews.filter(r => r.queerEmployment).length / total) * 100;
+const total = reviews.length;
 
-    const veganPriceDist = {
-      ucuz: reviews.filter(r => r.veganPrice === "ucuz").length,
-      normal: reviews.filter(r => r.veganPrice === "normal").length,
-      pahali: reviews.filter(r => r.veganPrice === "pahali").length,
-    };
+const queerRespect = reviews.reduce((sum, r) => sum + (Number(r.queerRespect) || 0), 0) / total;
+const animalFriendly = reviews.reduce((sum, r) => sum + (Number(r.animalFriendly) || 0), 0) / total;
+const veganQuality = reviews.reduce((sum, r) => sum + (Number(r.veganQuality) || 0), 0) / total;
 
-    res.json({
-      queerRespect: Number(queerRespect.toFixed(1)),
-      animalFriendly: Number(animalFriendly.toFixed(1)),
-      veganQuality: Number(veganQuality.toFixed(1)),
-      queerEmploymentRate: Number(queerEmploymentRate.toFixed(1)),
-      veganPriceDist,
-      total,
-    });
-  } catch (err) {
-    console.error("❌ İstatistik hesaplanamadı:", err);
-    res.status(500).json({ error: "Sunucu hatası" });
-  }
+const queerEmploymentRate =
+  (reviews.filter(r => r.queerEmployment === true || r.queerEmployment === "true").length / total) * 100;
+
+const veganPriceDist = {
+  ucuz: reviews.filter(r => r.veganPrice === "ucuz").length,
+  normal: reviews.filter(r => r.veganPrice === "normal").length,
+  pahali: reviews.filter(r => r.veganPrice === "pahali").length,
+};
+
+const result = {
+  queerRespect: Number(queerRespect.toFixed(1)),
+  animalFriendly: Number(animalFriendly.toFixed(1)),
+  veganQuality: Number(veganQuality.toFixed(1)),
+  queerEmploymentRate: Number(queerEmploymentRate.toFixed(1)),
+  veganPriceDist,
+  total,
+};
+
+console.log("✅ İstatistik hesaplandı:", result);
+res.json(result);
+```
+
+} catch (err) {
+console.error(“❌ İstatistik hesaplanamadı:”, err);
+res.status(500).json({ error: “Sunucu hatası: “ + err.message });
+}
 });
 
 export default router;
