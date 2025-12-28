@@ -1,65 +1,68 @@
-import express from "express";
-import { db } from "../firebase.js";
+import express from “express”;
+import { db } from “../firebase.js”;
 
 const router = express.Router();
 
 // 🔹 Yeni yorum kaydı
-router.post("/:placeId", async (req, res) => {
-  try {
-    const data = req.body;
+router.post(”/:placeId”, async (req, res) => {
+try {
+const data = req.body;
+console.log(“📝 Yeni yorum kaydediliyor:”, data);
 
-    const reviewData = {
-      placeId: req.params.placeId,
-      nickname: data.nickname || "Anonim",
-      queerRespect: data.queerRespect,
-      queerEmployment: data.queerEmployment,
-      animalFriendly: data.animalFriendly,
-      veganQuality: data.veganQuality,
-      veganPrice: data.veganPrice,
-      comment: data.comment,
-      flag: data.flag,
-      placeName: data.placeName,
-      lat: data.lat,
-      lng: data.lng,
-      createdAt: new Date(),
-    };
+```
+const reviewData = {
+  placeId: req.params.placeId,
+  nickname: data.nickname || "Anonim",
+  queerRespect: Number(data.queerRespect) || 5,
+  queerEmployment: data.queerEmployment === true || data.queerEmployment === "true",
+  animalFriendly: Number(data.animalFriendly) || 5,
+  veganQuality: Number(data.veganQuality) || 5,
+  veganPrice: data.veganPrice || "normal",
+  comment: data.comment || "",
+  flag: data.flag === true || data.flag === "true",
+  placeName: data.placeName || "",
+  lat: Number(data.lat) || 0,
+  lng: Number(data.lng) || 0,
+  createdAt: new Date(),
+};
 
-    await db.collection("reviews").add(reviewData);
-    res.json({ ok: true });
-  } catch (err) {
-    console.error("❌ Review eklenemedi:", err);
-    res.status(500).json({ error: "Sunucu hatası" });
-  }
+const docRef = await db.collection("reviews").add(reviewData);
+console.log("✅ Yorum kaydedildi, ID:", docRef.id);
+
+res.json({ ok: true, id: docRef.id });
+```
+
+} catch (err) {
+console.error(“❌ Review eklenemedi:”, err);
+res.status(500).json({ error: “Sunucu hatası: “ + err.message });
+}
 });
 
 // 🔹 Mekana ait yorumları getir
-router.get("/:placeId", async (req, res) => {
-  try {
-    const snapshot = await db.collection("reviews")
-      .where("placeId", "==", req.params.placeId)
-      .get();
+router.get(”/:placeId”, async (req, res) => {
+try {
+console.log(“🔍 Yorumlar getiriliyor, placeId:”, req.params.placeId);
 
-    const reviews = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-    res.json(reviews);
-  } catch (err) {
-    console.error("❌ Yorumlar çekilemedi:", err);
-    res.status(500).json({ error: "Yorumlar alınamadı" });
-  }
-});
+```
+const snapshot = await db.collection("reviews")
+  .where("placeId", "==", req.params.placeId)
+  .orderBy("createdAt", "desc")
+  .get();
 
-// 🔹 Tüm yorumları getir
-router.get("/all", async (req, res) => {
-  try {
-    const snapshot = await db.collection("reviews").get();
-    const reviews = snapshot.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }));
-    res.json(reviews);
-  } catch (err) {
-    console.error("❌ Tüm yorumlar alınamadı:", err);
-    res.status(500).json({ error: "Veri çekme hatası" });
-  }
+const reviews = snapshot.docs.map((d) => ({ 
+  id: d.id, 
+  ...d.data(),
+  createdAt: d.data().createdAt?.toDate?.()?.toISOString() || null
+}));
+
+console.log(`✅ ${reviews.length} adet yorum bulundu`);
+res.json(reviews);
+```
+
+} catch (err) {
+console.error(“❌ Yorumlar çekilemedi:”, err);
+res.status(500).json({ error: “Yorumlar alınamadı: “ + err.message });
+}
 });
 
 export default router;
