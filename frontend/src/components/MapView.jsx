@@ -352,15 +352,16 @@ return (
 
 return (
 <div className="relative w-full h-full">
-{/* 🔍 Search Box */}
-<div className="absolute top-6 left-1/2 -translate-x-1/2 z-10 w-full max-w-md px-4">
+{/* 🔍 Search Box - pointer-events ile düzeltme */}
+<div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4 pointer-events-none">
+<div className="pointer-events-auto">
 <Autocomplete
 onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
 onPlaceChanged={onPlaceChanged}
 options={{ componentRestrictions: { country: “tr” } }}
 >
 <div className="relative">
-<Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+<Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
 <input
 type="text"
 placeholder="Mekan ara (örn: Starbucks Ankara)"
@@ -368,6 +369,7 @@ className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-2xl border-2 border-white b
 />
 </div>
 </Autocomplete>
+</div>
 </div>
 
 ```
@@ -382,6 +384,8 @@ className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-2xl border-2 border-white b
       fullscreenControl: false,
       streetViewControl: false,
       mapTypeControl: false,
+      zoomControl: true,
+      gestureHandling: 'greedy'
     }}
   >
     {selectedPlace && (
@@ -393,7 +397,7 @@ className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-2xl border-2 border-white b
   </GoogleMap>
 
   {/* 🎨 Legend */}
-  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-xl flex items-center gap-4 text-sm font-medium">
+  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-xl flex items-center gap-4 text-sm font-medium z-[1000]">
     <span className="flex items-center gap-2">
       <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
       Queer Friendly
