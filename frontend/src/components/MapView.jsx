@@ -6,7 +6,7 @@ const center = { lat: 39.0, lng: 35.0 };
 const libraries = [‘places’];
 const API = import.meta.env.VITE_API_URL || “”;
 
-// 🎨 Modern Modal Component
+// Modern Modal Component
 function ModernPlaceModal({ place, onClose }) {
 const [reviews, setReviews] = useState([]);
 const [loading, setLoading] = useState(false);
@@ -66,11 +66,11 @@ lng: place.lng,
 
 ```
   if (response.ok) {
-    alert("Yorumun kaydedildi! 💚");
+    alert("Yorumun kaydedildi!");
     onClose();
   }
 } catch (err) {
-  alert("Bir hata oluştu 😿");
+  alert("Bir hata olustu");
 } finally {
   setLoading(false);
 }
@@ -87,7 +87,6 @@ onClick={onClose}
 className=“bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl”
 onClick={(e) => e.stopPropagation()}
 >
-{/* Header */}
 <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex items-start justify-between z-10">
 <div>
 <h2 className="text-2xl font-bold text-gray-900">{place.name}</h2>
@@ -106,17 +105,15 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
 </div>
 
 ```
-    {/* Content */}
     <div className="p-6 space-y-6">
-      {/* Previous Reviews */}
       {reviews.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-semibold text-gray-900">Önceki Yorumlar</h3>
+          <h3 className="font-semibold text-gray-900">Onceki Yorumlar</h3>
           {reviews.map((r) => (
             <div key={r.id} className="bg-gray-50 rounded-2xl p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-gray-900">
-                  🌿 {r.nickname || "Anonim"}
+                  {r.nickname || "Anonim"}
                 </span>
                 <div className="flex items-center gap-1 text-sm text-amber-600">
                   <Star size={14} fill="currentColor" />
@@ -124,24 +121,23 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 </div>
               </div>
               {r.comment && <p className="text-sm text-gray-600">{r.comment}</p>}
-              {r.flag && <span className="text-xs text-red-600">🚩 Sorun bildirildi</span>}
+              {r.flag && <span className="text-xs text-red-600">Sorun bildirildi</span>}
             </div>
           ))}
         </div>
       )}
 
-      {/* Review Form */}
       <div className="space-y-5">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Takma Adın
+            Takma Adin
           </label>
           <input
             type="text"
             name="nickname"
             value={form.nickname}
             onChange={handleChange}
-            placeholder="İsmini veya bir takma ad yaz"
+            placeholder="Ismini veya bir takma ad yaz"
             required
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
           />
@@ -149,7 +145,7 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Queer Saygı: {form.queerRespect}/10
+            Queer Saygi: {form.queerRespect}/10
           </label>
           <input
             type="range"
@@ -173,7 +169,7 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             style={{ accentColor: '#9333ea' }}
           />
           <label className="text-sm font-medium text-gray-700">
-            Queer bireyler istihdam ediyorlar mı?
+            Queer bireyler istihdam ediyorlar mi?
           </label>
         </div>
 
@@ -211,7 +207,7 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Vegan Fiyatlandırma
+            Vegan Fiyatlandirma
           </label>
           <select
             name="veganPrice"
@@ -219,21 +215,21 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
           >
-            <option value="ucuz">Ucuz 💰</option>
-            <option value="normal">Normal 💰💰</option>
-            <option value="pahali">Pahalı 💰💰💰</option>
+            <option value="ucuz">Ucuz</option>
+            <option value="normal">Normal</option>
+            <option value="pahali">Pahali</option>
           </select>
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Deneyimini Paylaş
+            Deneyimini Paylas
           </label>
           <textarea
             name="comment"
             value={form.comment}
             onChange={handleChange}
-            placeholder="Yaşadıklarını anlat..."
+            placeholder="Yasadiklarin anlat..."
             rows={4}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all resize-none"
           />
@@ -249,7 +245,7 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             style={{ accentColor: '#dc2626' }}
           />
           <label className="text-sm font-medium text-gray-700">
-            🚩 Bu mekanda sorun yaşadım
+            Bu mekanda sorun yasadim
           </label>
         </div>
 
@@ -258,7 +254,7 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           disabled={loading}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Gönderiliyor..." : "Deneyimi Paylaş ✨"}
+          {loading ? "Gonderiliyor..." : "Deneyimi Paylas"}
         </button>
       </div>
     </div>
@@ -269,7 +265,6 @@ className="p-2 hover:bg-gray-100 rounded-full transition-colors"
 );
 }
 
-// 🗺️ Main Map Component
 export default function MapView() {
 const { isLoaded, loadError } = useJsApiLoader({
 googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
@@ -280,7 +275,6 @@ const [selectedPlace, setSelectedPlace] = useState(null);
 const [map, setMap] = useState(null);
 const autocompleteRef = useRef(null);
 
-// Map click event
 useEffect(() => {
 if (!map || !isLoaded) return;
 
@@ -337,7 +331,7 @@ map.setZoom(15);
 if (loadError) {
 return (
 <div className="w-full h-full flex items-center justify-center bg-red-50 text-red-600 text-xl font-bold">
-❌ Harita yüklenemedi: {loadError.message}
+Harita yuklenemedi: {loadError.message}
 </div>
 );
 }
@@ -345,14 +339,13 @@ return (
 if (!isLoaded) {
 return (
 <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600 text-2xl font-bold">
-⏳ Harita yükleniyor…
+Harita yukleniyor…
 </div>
 );
 }
 
 return (
 <div className="relative w-full h-full">
-{/* 🔍 Search Box - pointer-events ile düzeltme */}
 <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4 pointer-events-none">
 <div className="pointer-events-auto">
 <Autocomplete
@@ -364,7 +357,7 @@ options={{ componentRestrictions: { country: “tr” } }}
 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
 <input
 type="text"
-placeholder="Mekan ara (örn: Starbucks Ankara)"
+placeholder="Mekan ara (orn: Starbucks Ankara)"
 className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-2xl border-2 border-white bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
 />
 </div>
@@ -373,7 +366,6 @@ className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-2xl border-2 border-white b
 </div>
 
 ```
-  {/* 🗺️ Google Map */}
   <GoogleMap
     center={center}
     zoom={6}
@@ -396,7 +388,6 @@ className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-2xl border-2 border-white b
     )}
   </GoogleMap>
 
-  {/* 🎨 Legend */}
   <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-xl flex items-center gap-4 text-sm font-medium z-[1000]">
     <span className="flex items-center gap-2">
       <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
@@ -408,7 +399,6 @@ className="w-full pl-12 pr-4 py-4 rounded-2xl shadow-2xl border-2 border-white b
     </span>
   </div>
 
-  {/* Modal */}
   {selectedPlace && (
     <ModernPlaceModal
       place={selectedPlace}
