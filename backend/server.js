@@ -31,7 +31,7 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 // ⚡️ SPA için tüm route'ları index.html'e yönlendir
-app.get("*", (req, res) => {
+app.get('(.*)', (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
 
